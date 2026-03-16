@@ -1,0 +1,3 @@
+{
+  "extends": "@PeerFolio/config/tsconfig.base.json"
+}
