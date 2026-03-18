@@ -28,7 +28,10 @@
     "dev:web": "turbo -F web dev",
     "dev:server": "turbo -F @PeerFolio/backend dev",
     "dev:setup": "turbo -F @PeerFolio/backend dev:setup",
-    "prepare": "husky"
+    "prepare": "husky",
+    "explain-changes": "./.specify/scripts/powershell/explain-changes.ps1",
+    "explain-staged": "./.specify/scripts/powershell/explain-changes.ps1 -Staged",
+    "explain-unstaged": "./.specify/scripts/powershell/explain-changes.ps1 -Unstaged"
   },
   "dependencies": {
     "@PeerFolio/env": "workspace:*",

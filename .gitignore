@@ -55,3 +55,7 @@ temp
 .specify/ 
 analysis.md
 specs
+.agents/learning-guides/
+.agent/learning-guides/
+**/learning-guides/
+*.md
