@@ -13,7 +13,9 @@ export const metadata: Metadata = {
   title: "Portfólio | PeerFolio",
 };
 
-export default async function PortfolioDetailPage({ params }: PortfolioDetailPageProps) {
+export default async function PortfolioDetailPage({
+  params,
+}: PortfolioDetailPageProps) {
   const { id } = await params;
 
   return <PortfolioDetailClient portfolioId={id as Id<"portfolios">} />;
