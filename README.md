@@ -7,7 +7,8 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **TypeScript** - For type safety and improved developer experience
 - **Next.js** - Full-stack React framework
 - **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
+- **HeroUI** - Componentes UI principais do projeto ([HeroUI](https://heroui.com/))
+- **Shared UI package** - Alternativas usando shadcn/ui na pasta `packages/ui`
 - **Convex** - Reactive backend-as-a-service platform
 - **Authentication** - Clerk
 - **Husky** - Git hooks for code quality
@@ -50,21 +51,22 @@ Your app will connect to the Convex cloud backend automatically.
 
 ## UI Customization
 
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
+O foco principal de UI neste projeto é a **HeroUI**. Quando um componente não estiver disponível na HeroUI, utilizamos os componentes shadcn/ui como fallback que são compartilhados via `packages/ui`.
 
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
+- Use sempre componentes da HeroUI (`@heroui/react`) primeiramente.
+- Fallbacks utilizando shadcn/ui ficam em `packages/ui/src/components/*`
+- Altere design tokens e estilos em `packages/ui/src/styles/globals.css`
+- Ajuste os paths do shadcn ou configurações de estilo em `packages/ui/components.json` e `apps/web/components.json`
 
-### Add more shared components
+### Adicionar mais componentes de fallback
 
-Run this from the project root to add more primitives to the shared UI package:
+Execute este comando na raiz do projeto para adicionar novas primitivas do shadcn/ui como alternativas:
 
 ```bash
 npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
 ```
 
-Import shared components like this:
+Importe os componentes compartilhados assim (referente aos fallbacks com shadcn/ui):
 
 ```tsx
 import { Button } from "@PeerFolio/ui/components/button";
