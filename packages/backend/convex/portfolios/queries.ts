@@ -134,16 +134,11 @@ export const list = query({
     filter: v.union(
       v.literal("latest"),
       v.literal("topRated"),
-      v.literal("weekendWinners"),
     ),
     area: v.optional(areaValidator),
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    if (args.filter === "weekendWinners") {
-      return { page: [], isDone: true, continueCursor: "" };
-    }
-
     const { filter, area, paginationOpts } = args;
 
     let filteredQuery;

@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { cn } from "@PeerFolio/ui/lib/utils";
 
-export type FeedFilter = "latest" | "topRated" | "weekendWinners";
+export type FeedFilter = "latest" | "topRated";
 
 interface FeedTabsProps {
   currentFilter: FeedFilter;
@@ -14,7 +14,6 @@ export function FeedTabs({ currentFilter, onFilterChange }: FeedTabsProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleTabClick = (filter: FeedFilter) => {
-    if (filter === "weekendWinners") return;
     startTransition(() => {
       onFilterChange(filter);
     });
@@ -33,12 +32,6 @@ export function FeedTabs({ currentFilter, onFilterChange }: FeedTabsProps) {
     {
       id: "topRated",
       label: "Melhor Avaliados",
-    },
-    {
-      id: "weekendWinners",
-      label: "Weekend Winners",
-      disabled: true,
-      badge: "Em breve",
     },
   ];
 

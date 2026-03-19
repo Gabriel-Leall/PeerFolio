@@ -3,11 +3,6 @@ import type { Metadata } from "next";
 
 import PortfolioDetailClient from "./PortfolioDetailClient";
 
-import type { Id } from "@PeerFolio/backend/convex/_generated/dataModel";
-import type { Metadata } from "next";
-
-import PortfolioDetailClient from "./PortfolioDetailClient";
-
 type PortfolioDetailPageProps = {
   params: Promise<{
     id: string;
@@ -23,6 +18,5 @@ export default async function PortfolioDetailPage({
 }: PortfolioDetailPageProps) {
   const { id } = await params;
 
-  return <PortfolioDetailClient portfolioId={id as Id<"portfolios">} />;
   return <PortfolioDetailClient portfolioId={id as Id<"portfolios">} />;
 }
