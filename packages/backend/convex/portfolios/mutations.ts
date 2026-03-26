@@ -23,7 +23,10 @@ export const submit = mutation({
     stack: v.array(v.string()),
     goalsContext: v.optional(v.string()),
   },
-  returns: v.object({ portfolioId: v.id("portfolios") }),
+  returns: v.object({
+    portfolioId: v.id("portfolios"),
+    claimed: v.boolean(),
+  }),
   handler: async (ctx, args) => {
     const user = await getInternalUser(ctx);
     const hasScreenshotProvider = Boolean(process.env.SCREENSHOT_ONE_KEY);
@@ -66,6 +69,30 @@ export const submit = mutation({
       });
     }
 
+    // Check if exists as seed
+    const seededPortfolio = await ctx.db
+      .query("portfolios")
+      .withIndex("by_isSeeded_and_normalizedUrl", (q) =>
+        q.eq("isSeeded", true).eq("normalizedUrl", normalizedUrl),
+      )
+      .first();
+
+    if (seededPortfolio) {
+      await ctx.db.patch(seededPortfolio._id, {
+        authorId: user._id,
+        isSeeded: false,
+        title: args.title,
+        stack: args.stack,
+        goalsContext: args.goalsContext,
+      });
+
+      await ctx.db.patch(user._id, {
+        portfoliosCount: user.portfoliosCount + 1,
+      });
+
+      return { portfolioId: seededPortfolio._id, claimed: true };
+    }
+
     const now = Date.now();
 
     const portfolioId = await ctx.db.insert("portfolios", {
@@ -83,6 +110,7 @@ export const submit = mutation({
       lastCritiqueAt: undefined,
       isDeleted: false,
       isArchived: false,
+      isSeeded: false,
       previewStatus: hasScreenshotProvider ? "pending" : "failed",
       previewAttemptCount: 0,
       urlStatus: "unchecked",
@@ -104,7 +132,7 @@ export const submit = mutation({
       );
     }
 
-    return { portfolioId };
+    return { portfolioId, claimed: false };
   },
 });
 

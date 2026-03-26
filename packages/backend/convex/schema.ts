@@ -74,6 +74,7 @@ export default defineSchema({
     isArchived: v.optional(v.boolean()),
     deletedAt: v.optional(v.number()),
     createdAt: v.number(),
+    isSeeded: v.optional(v.boolean()),
   })
     .index("by_authorId", ["authorId"])
     .index("by_createdAt", ["createdAt"])
@@ -84,7 +85,8 @@ export default defineSchema({
     ])
     .index("by_topRatedScore", ["topRatedScore"])
     .index("by_lastCritiqueAt", ["lastCritiqueAt"])
-    .index("by_normalizedUrl", ["normalizedUrl"]),
+    .index("by_normalizedUrl", ["normalizedUrl"])
+    .index("by_isSeeded_and_normalizedUrl", ["isSeeded", "normalizedUrl"]),
 
   critiqueUpvotes: defineTable({
     critiqueId: v.id("critiques"),

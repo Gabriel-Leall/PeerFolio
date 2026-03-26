@@ -177,6 +177,10 @@ export default function SubmitPortfolioForm() {
         goalsContext: goalsContext.trim() || undefined,
       });
 
+      if (result.claimed) {
+        alert("Parabens por reivindiciar seu portfolio, se ele foi seedado é porque o autor do projeto achou seu projeto incrivel, me siga nas rede sociais");
+      }
+
       router.push(`/portfolio/${result.portfolioId}`);
     } catch (err: unknown) {
       const errMsg =
