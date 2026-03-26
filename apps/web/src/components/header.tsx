@@ -14,6 +14,7 @@ import {
 import { useMutation, useQuery } from "convex/react";
 import { Bell, LogOut } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
@@ -69,105 +70,169 @@ export default function Header() {
     }
   };
 
-  const links = [
-    { to: "/", label: "Home" },
-    { to: "/feed", label: "Feed" },
+  const pathname = usePathname();
+  const isLandingPage = pathname === "/";
+
+  const landingLinks = [
+    { to: "/feed", label: "Explorar" },
+    { to: "#portfolios", label: "Comunidade" },
   ] as const;
 
-  return (
-    <div>
-      <div className="flex flex-row items-center justify-between px-2 py-1">
-        <nav className="flex gap-4 text-lg">
-          {links.map(({ to, label }) => {
-            return (
-              <Link key={to} href={to}>
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="flex items-center gap-2">
-          {isSignedIn && (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    aria-label="Abrir notificacoes"
-                  />
-                }
-              >
-                <span className="relative inline-flex">
-                  <Bell className="size-4" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -right-2 -top-2 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
+  const appLinks = [
+    { to: "/feed", label: "Feed" },
+    { to: "/dashboard", label: "Dashboard" },
+    { to: "/submit", label: "Submeter" },
+  ] as const;
+
+  const links = isLandingPage ? landingLinks : appLinks;
+
+  const authSection = (
+    <div className="flex items-center gap-3">
+      {isSignedIn && (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Abrir notificacoes"
+                className="border-white/10 bg-transparent hover:bg-white/5 text-white/80 transition-colors"
+              />
+            }
+          >
+            <span className="relative inline-flex">
+              <Bell className="size-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-[0_0_10px_rgba(var(--primary),0.5)]">
+                  {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80">
-                <DropdownMenuGroup>
-                  <DropdownMenuLabel>Notificacoes</DropdownMenuLabel>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
+              )}
+            </span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80 border-white/10 bg-[#131313]/95 backdrop-blur-xl text-white">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="font-serif text-lg text-white/90">Notificacoes</DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator className="bg-white/5" />
 
-                <DropdownMenuGroup>
-                  {unreadCount === 0 ? (
-                    <DropdownMenuItem disabled>
-                      Nenhuma notificacao pendente
-                    </DropdownMenuItem>
-                  ) : (
-                    unreadNotifications?.map((notification) => (
-                      <DropdownMenuItem
-                        key={notification._id}
-                        className="flex-col items-start gap-1"
-                      >
-                        <span className="text-xs font-semibold">
-                          {notification.title}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {notification.message}
-                        </span>
-                      </DropdownMenuItem>
-                    ))
-                  )}
-                </DropdownMenuGroup>
+            <DropdownMenuGroup>
+              {unreadCount === 0 ? (
+                <DropdownMenuItem disabled className="text-white/50">
+                  Nenhuma notificacao pendente
+                </DropdownMenuItem>
+              ) : (
+                unreadNotifications?.map((notification) => (
+                  <DropdownMenuItem
+                    key={notification._id}
+                    className="flex-col items-start gap-1 focus:bg-white/10 transition-colors"
+                  >
+                    <span className="text-xs font-semibold text-white/90">
+                      {notification.title}
+                    </span>
+                    <span className="text-xs text-white/60">
+                      {notification.message}
+                    </span>
+                  </DropdownMenuItem>
+                ))
+              )}
+            </DropdownMenuGroup>
 
-                {unreadCount > 0 && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem onClick={handleMarkAllAsRead}>
-                        Marcar todas como lidas
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          <ModeToggle />
-          {isSignedIn ? (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => signOut({ redirectUrl: "/" })}
-              aria-label="Sair"
-            >
-              <LogOut className="size-4" />
-            </Button>
-          ) : (
-            <Link href={"/sign-in" as any}>
-              <Button variant="outline" size="sm">
-                Entrar
-              </Button>
-            </Link>
-          )}
-        </div>
-      </div>
-      <hr />
+            {unreadCount > 0 && (
+              <>
+                <DropdownMenuSeparator className="bg-white/5" />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem 
+                    onClick={handleMarkAllAsRead}
+                    className="text-primary focus:bg-primary/10 focus:text-primary"
+                  >
+                    Marcar todas como lidas
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+      <ModeToggle />
+      {isSignedIn ? (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => signOut({ redirectUrl: "/" })}
+          aria-label="Sair"
+          className="border-white/10 bg-transparent hover:bg-white/5 text-white/80 transition-colors ml-1"
+        >
+          <LogOut className="size-4" />
+        </Button>
+      ) : (
+        <Link href={"/sign-in" as any} className="ml-2">
+          <Button size="sm" className="bg-primary hover:bg-secondary text-white border-0 shadow-[0_0_15px_rgba(132,94,247,0.2)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(132,94,247,0.4)] px-6 rounded-md font-medium">
+            Entrar
+          </Button>
+        </Link>
+      )}
     </div>
+  );
+
+  if (isLandingPage) {
+    return (
+      <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-[#0a0a0a]/70 backdrop-blur-xl">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+          <Link href="/" className="font-serif text-3xl font-bold tracking-tight text-white italic transition-transform hover:scale-[1.02]">
+            PeerFolio
+          </Link>
+          
+          <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-8 text-sm font-medium">
+            {links.map(({ to, label }) => (
+              <Link
+                key={to}
+                href={to as any}
+                className="relative text-white/70 transition-colors hover:text-white group py-2"
+              >
+                {label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full rounded-full"></span>
+              </Link>
+            ))}
+          </nav>
+
+          {authSection}
+        </div>
+      </header>
+    );
+  }
+
+  // APP FEED NAVBAR
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#131313]/90 backdrop-blur-md">
+      <div className="mx-auto flex h-16 w-full items-center justify-between px-4 sm:px-6">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="font-serif text-2xl font-bold tracking-tight text-white italic transition-transform hover:scale-[1.02]">
+            PeerFolio
+          </Link>
+          <nav className="hidden md:flex gap-2 text-sm font-medium">
+            {links.map(({ to, label }) => {
+              const isActive = pathname === to;
+              return (
+                <Link
+                  key={to}
+                  href={to as any}
+                  className={`relative px-4 py-2 rounded-md transition-all ${
+                    isActive 
+                      ? "text-white bg-white/10 font-semibold" 
+                      : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-t-sm" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+        {authSection}
+      </div>
+    </header>
   );
 }

@@ -291,7 +291,7 @@ function StackDisplay({ stack }: { stack: string[] }) {
 
 function FeedbackRequestSection({ goalsContext }: { goalsContext: string }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-[#a762b5]/20 bg-gradient-to-br from-[#a762b5]/5 to-[#a762b5]/10 p-5">
+    <div className="relative overflow-hidden rounded-xl border border-[#a762b5]/20 bg-linear-to-br from-[#a762b5]/5 to-[#a762b5]/10 p-5">
       <div className="absolute top-0 right-0 p-2 opacity-10">
         <Lightbulb className="h-16 w-16 text-[#a762b5]" />
       </div>
@@ -538,7 +538,7 @@ export default function PortfolioDetailClient({ portfolioId }: PortfolioDetailCl
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-3">
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-              <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                 {portfolio.title}
               </span>
             </h1>
