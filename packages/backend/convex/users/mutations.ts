@@ -29,8 +29,10 @@ export const upsertProfile = mutation({
         github: v.optional(v.string()),
         linkedin: v.optional(v.string()),
         website: v.optional(v.string()),
+        twitter: v.optional(v.string()),
       }),
     ),
+    bannerUrl: v.optional(v.string()),
   },
   returns: v.id("users"),
   handler: async (ctx, args) => {
@@ -106,6 +108,7 @@ export const upsertProfile = mutation({
     if (args.availabilityStatus !== undefined)
       patch.availabilityStatus = args.availabilityStatus;
     if (args.socialLinks !== undefined) patch.socialLinks = args.socialLinks;
+    if (args.bannerUrl !== undefined) patch.bannerUrl = args.bannerUrl;
 
     if (Object.keys(patch).length > 0) {
       await ctx.db.patch(user._id, patch);

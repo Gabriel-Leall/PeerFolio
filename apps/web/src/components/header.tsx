@@ -12,7 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@PeerFolio/ui/components/dropdown-menu";
 import { useMutation, useQuery } from "convex/react";
-import { Bell, LogOut } from "lucide-react";
+import { Avatar } from "@heroui/react";
+import { Bell, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -21,8 +22,9 @@ import { toast } from "sonner";
 import { ModeToggle } from "./mode-toggle";
 
 export default function Header() {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
   const { signOut } = useClerk();
+  const me = useQuery(api.users.queries.getMe);
   const unreadNotifications = useQuery(
     api.users.queries.getUnreadNotifications,
     {},
@@ -80,7 +82,6 @@ export default function Header() {
 
   const appLinks = [
     { to: "/feed", label: "Feed" },
-    { to: "/dashboard", label: "Dashboard" },
     { to: "/submit", label: "Submeter" },
   ] as const;
 
@@ -155,15 +156,55 @@ export default function Header() {
       )}
       <ModeToggle />
       {isSignedIn ? (
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => signOut({ redirectUrl: "/" })}
-          aria-label="Sair"
-          className="border-white/10 bg-transparent hover:bg-white/5 text-white/80 transition-colors ml-1"
-        >
-          <LogOut className="size-4" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="ml-1 cursor-pointer outline-none ring-2 ring-transparent focus:ring-primary/50 rounded-full transition-all p-0 bg-transparent border-none">
+            {me?.avatarUrl ? (
+              <Avatar
+                size="sm"
+                src={me.avatarUrl}
+                alt={me.nickname ?? "Avatar do usuário"}
+              />
+            ) : (
+              <Avatar
+                size="sm"
+                className="bg-primary text-primary-foreground"
+              >
+                <Avatar.Fallback className="text-xs">
+                  {me?.nickname?.charAt(0).toUpperCase() ?? user?.firstName?.charAt(0).toUpperCase() ?? "?"}
+                </Avatar.Fallback>
+              </Avatar>
+            )}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 border-white/10 bg-[#131313]/95 backdrop-blur-xl text-white">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{me?.nickname ?? user?.fullName ?? "Usuário"}</p>
+                  <p className="text-xs leading-none text-white/60">{user?.emailAddresses[0]?.emailAddress}</p>
+                </div>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuGroup>
+              <DropdownMenuItem>
+                <Link href={`/dashboard/${me?._id}`} className="flex items-center w-full">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Meu Perfil</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={() => signOut({ redirectUrl: "/" })}
+                className="text-danger focus:text-danger focus:bg-danger/10 cursor-pointer"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sair</span>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ) : (
         <Link href={"/sign-in" as any} className="ml-2">
           <Button size="sm" className="bg-primary hover:bg-secondary text-white border-0 shadow-[0_0_15px_rgba(132,94,247,0.2)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(132,94,247,0.4)] px-6 rounded-md font-medium">

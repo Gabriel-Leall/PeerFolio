@@ -20,6 +20,7 @@ import type * as portfolios_actions from "../portfolios/actions.js";
 import type * as portfolios_mutations from "../portfolios/mutations.js";
 import type * as portfolios_queries from "../portfolios/queries.js";
 import type * as portfolios_scheduled from "../portfolios/scheduled.js";
+import type * as portfolios_seeds from "../portfolios/seeds.js";
 import type * as privateData from "../privateData.js";
 import type * as upload from "../upload.js";
 import type * as users_mutations from "../users/mutations.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   "portfolios/mutations": typeof portfolios_mutations;
   "portfolios/queries": typeof portfolios_queries;
   "portfolios/scheduled": typeof portfolios_scheduled;
+  "portfolios/seeds": typeof portfolios_seeds;
   privateData: typeof privateData;
   upload: typeof upload;
   "users/mutations": typeof users_mutations;

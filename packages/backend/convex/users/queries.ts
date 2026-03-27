@@ -89,6 +89,7 @@ export const getProfile = query({
       _id: user._id,
       nickname: user.nickname,
       avatarUrl: user.avatarUrl,
+      bannerUrl: user.bannerUrl,
       primaryArea: user.primaryArea as string | undefined,
       bio: user.bio,
       stackTags: user.stackTags,

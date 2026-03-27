@@ -1,5 +1,3 @@
-"use node";
-
 import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
 import { AREA_VALUES } from "../lib/constants";

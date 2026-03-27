@@ -11,10 +11,8 @@ import {
   Clock,
   Edit,
   Eye,
-  FileText,
   Globe,
   Github,
-  Heart,
   Linkedin,
   MessageSquare,
   Plus,
@@ -24,11 +22,11 @@ import {
   ToggleLeft,
   ToggleRight,
   TrendingUp,
-  UserPlus,
+  Twitter,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import { Button } from "@PeerFolio/ui/components/button";
 import { Card } from "@PeerFolio/ui/components/card";
@@ -89,11 +87,28 @@ export default function ProfilePage() {
   const meQuery = useQuery(api.users.queries.getMe);
   const upsertProfile = useMutation(api.users.mutations.upsertProfile);
 
-  if (profile === undefined) {
+  const isLoading = profile === undefined;
+  const isNotFound = profile === null;
+
+  useEffect(() => {
+    const activeButton = tabsRef.current?.querySelector('button[class*="border-[#a762b5]"]') as HTMLButtonElement;
+    if (activeButton) {
+      const rect = activeButton.getBoundingClientRect();
+      const parentRect = activeButton.parentElement?.getBoundingClientRect();
+      if (parentRect) {
+        setTabIndicatorStyle({
+          left: rect.left - parentRect.left,
+          width: rect.width,
+        });
+      }
+    }
+  }, [activeTab, isLoading, isNotFound]);
+
+  if (isLoading) {
     return <ProfileSkeleton />;
   }
 
-  if (profile === null) {
+  if (isNotFound) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center px-4">
         <div className="mb-4 rounded-full bg-muted p-4">
@@ -149,22 +164,8 @@ export default function ProfilePage() {
     setActiveTab(tab);
   };
 
-  useEffect(() => {
-    const activeButton = tabsRef.current?.querySelector('button[class*="border-[#a762b5]"]') as HTMLButtonElement;
-    if (activeButton) {
-      const rect = activeButton.getBoundingClientRect();
-      const parentRect = activeButton.parentElement?.getBoundingClientRect();
-      if (parentRect) {
-        setTabIndicatorStyle({
-          left: rect.left - parentRect.left,
-          width: rect.width,
-        });
-      }
-    }
-  }, [activeTab]);
-
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 space-y-8">
+    <div className="mx-auto max-w-7xl px-0 md:px-4 py-0">
       {isOwner && (
         <>
           <WelcomeSection
@@ -179,355 +180,282 @@ export default function ProfilePage() {
         </>
       )}
 
-      {/* Profile header — enhanced for public view */}
-      <div
-        className={`flex flex-col gap-6 ${
-          isPublicView ? "sm:flex-row-reverse items-start" : "sm:flex-row items-center"
-        }`}
-      >
-        {/* Avatar — larger for public view */}
-        <div className={`shrink-0 ${isPublicView ? "mx-auto sm:mx-0" : ""}`}>
-          {profile.avatarUrl ? (
-            <img
-              src={profile.avatarUrl}
-              alt={`Avatar de ${displayName}`}
-              className={`rounded-full object-cover ring-4 shadow-lg transition-all ${
-                isPublicView
-                  ? "h-32 w-32 ring-[#a762b5]/20"
-                  : "h-20 w-20 ring-border"
-              }`}
-            />
-          ) : (
-            <div
-              className={`flex items-center justify-center rounded-full bg-secondary text-secondary-foreground ring-4 shadow-lg font-semibold ${
-                isPublicView ? "h-32 w-32 text-4xl ring-[#a762b5]/20" : "h-20 w-20 text-3xl ring-border"
-              }`}
-            >
-              {displayName.charAt(0).toUpperCase()}
-            </div>
-          )}
-        </div>
-
-        {/* Info block */}
-        <div className="flex-1 min-w-0 space-y-3">
-          {/* Name row with badges */}
-          <div className="flex flex-wrap items-center gap-3">
-            <h1
-              className={`font-bold truncate ${isPublicView ? "text-3xl" : "text-2xl"}`}
-            >
-              @{displayName}
-            </h1>
-
-            {/* Reputation badge — more prominent in public view */}
-            {profile.reputationBadge && (
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full font-semibold ${
-                  isPublicView
-                    ? "bg-linear-to-r from-amber-100 to-amber-50 dark:from-amber-900/50 dark:to-amber-800/40 text-amber-700 dark:text-amber-400 px-4 py-1.5 text-sm shadow-sm"
-                    : "bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 px-2.5 py-0.5 text-xs"
-                }`}
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                {profile.reputationBadge}
-              </span>
-            )}
-
-            {/* Area badge */}
-            {profile.primaryArea && (
-              <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
-                {profile.primaryArea}
-              </span>
-            )}
-
-            {/* Availability badge — only for owner */}
-            {isOwner && profile.availabilityStatus === "available" && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                Disponível para trabalho
-              </span>
-            )}
-          </div>
-
-          {/* Bio — more readable in public view */}
-          {profile.bio && (
-            <p
-              className={`text-muted-foreground ${isPublicView ? "text-base max-w-2xl" : "text-sm max-w-xl"}`}
-            >
-              {profile.bio}
-            </p>
-          )}
-
-          {/* Stack tags */}
-          {profile.stackTags && profile.stackTags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {profile.stackTags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-md border bg-muted/50 px-2 py-1 text-xs text-muted-foreground"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Social links — icon buttons for public view */}
-          {profile.socialLinks && (
-            <div className="flex flex-wrap gap-2">
-              {profile.socialLinks.github && (
-                <a
-                  href={profile.socialLinks.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
-                    isPublicView
-                      ? "hover:bg-[#a762b5]/5 hover:border-[#a762b5]/30 hover:text-[#a762b5]"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
-                  <Github className="h-4 w-4" />
-                  {isPublicView ? "GitHub" : ""}
-                </a>
-              )}
-              {profile.socialLinks.linkedin && (
-                <a
-                  href={profile.socialLinks.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
-                    isPublicView
-                      ? "hover:bg-[#a762b5]/5 hover:border-[#a762b5]/30 hover:text-[#a762b5]"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
-                  <Linkedin className="h-4 w-4" />
-                  {isPublicView ? "LinkedIn" : ""}
-                </a>
-              )}
-              {profile.socialLinks.website && (
-                <a
-                  href={profile.socialLinks.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
-                    isPublicView
-                      ? "hover:bg-[#a762b5]/5 hover:border-[#a762b5]/30 hover:text-[#a762b5]"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
-                  <Globe className="h-4 w-4" />
-                  {isPublicView ? "Website" : ""}
-                </a>
-              )}
-            </div>
-          )}
-
-          {/* Owner actions */}
-          {isOwner && (
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link
-                href="/setup-profile"
-                className="rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted transition flex items-center gap-1.5"
-              >
-                <Edit className="h-3.5 w-3.5" />
-                Editar perfil
-              </Link>
-
-              <button
-                type="button"
-                onClick={handleAvailabilityToggle}
-                disabled={isTogglingAvailability}
-                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted transition disabled:opacity-50 cursor-pointer"
-                aria-label={
-                  profile.availabilityStatus === "available"
-                    ? "Marcar como indisponível"
-                    : "Marcar como disponível para trabalho"
-                }
-              >
-                {profile.availabilityStatus === "available" ? (
-                  <ToggleRight className="h-4 w-4 text-green-500" />
-                ) : (
-                  <ToggleLeft className="h-4 w-4 text-muted-foreground" />
-                )}
-                {profile.availabilityStatus === "available"
-                  ? "Disponível para trabalho"
-                  : "Indisponível"}
-              </button>
-            </div>
-          )}
-
-          {/* Public view CTAs */}
-          {isPublicView && (
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded-lg bg-[#a762b5] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition shadow-sm"
-              >
-                <UserPlus className="h-4 w-4" />
-                Conectar
-              </button>
-              <Link
-                href={`/portfolio/${profile.portfolios[0]?._id ?? ""}`}
-                className="inline-flex items-center gap-2 rounded-lg border border-[#a762b5]/30 bg-[#a762b5]/5 px-4 py-2 text-sm font-medium text-[#a762b5] hover:bg-[#a762b5]/10 transition"
-              >
-                <Eye className="h-4 w-4" />
-                Ver portfólio
-              </Link>
-            </div>
-          )}
-        </div>
+      {/* Banner Container - 16:4 aspect ratio */}
+      <div className="relative w-full aspect-[16/4] min-h-[150px] md:min-h-[200px] overflow-hidden bg-surface-container">
+        {profile.bannerUrl && (
+          <img
+            src={profile.bannerUrl}
+            alt="Banner do perfil"
+            className="w-full h-full object-cover"
+          />
+        )}
       </div>
 
-      {/* Stats row */}
-      {isOwner && hasNoActivity ? (
-        <ZeroActivityOnboarding />
-      ) : (
-        <StatsSection
-          portfoliosCount={profile.portfoliosCount}
-          critiquesGivenCount={profile.critiquesGivenCount}
-          upvotesReceivedCount={profile.upvotesReceivedCount}
-          isPublicView={isPublicView}
-        />
-      )}
-
-      {isOwner && <ActivitySection profile={profile} />}
-
-      {/* Tabs — animated with prominent counts */}
-      <div>
-        <div className="relative border-b" ref={tabsRef}>
-          {/* Animated indicator */}
-          <div
-            className="absolute bottom-0 h-0.5 bg-[#a762b5] transition-all duration-300 ease-out"
-            style={{
-              left: tabIndicatorStyle.left,
-              width: tabIndicatorStyle.width,
-            }}
-          />
-          <div className="flex gap-1">
-            <TabButton
-              active={activeTab === "portfolios"}
-              onClick={(e) => handleTabClick("portfolios", e)}
-              count={profile.portfolios.length}
-            >
-              <BookOpen className="h-4 w-4 inline mr-1.5" />
-              Portfólios
-            </TabButton>
-            <TabButton
-              active={activeTab === "critiques"}
-              onClick={(e) => handleTabClick("critiques", e)}
-              count={profile.critiquesGiven.length}
-            >
-              <MessageSquare className="h-4 w-4 inline mr-1.5" />
-              Críticas
-            </TabButton>
-          </div>
-        </div>
-
-        {/* Tab content with animation */}
-        <div className="mt-6 animate-in fade-in duration-300" key={activeTab}>
-          {activeTab === "portfolios" && (
-            <div>
-              {profile.portfolios.length === 0 ? (
-                <EmptyTabState
-                  icon={<BookOpen className="h-12 w-12" />}
-                  title={
-                    isOwner
-                      ? "Nenhum portfólio ainda"
-                      : "Sem portfólios públicos"
-                  }
-                  message={
-                    isOwner
-                      ? "Você ainda não submeteu nenhum portfólio. Comece a mostrar seu trabalho para a comunidade."
-                      : `${displayName} ainda não possui portfólios publicados.`
-                  }
-                  isOwner={isOwner}
-                  ownerCta={{ label: "Submeter portfólio", href: "/submit" }}
+      {/* Profile Header - positioned to overlap banner */}
+      <div className="relative px-4 md:px-8 -mt-16 md:-mt-20">
+        <div className="flex flex-col md:flex-row items-end gap-6">
+          {/* Avatar - overlaps banner */}
+          <div className="shrink-0 relative z-10">
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-[6px] border-surface-container overflow-hidden shadow-2xl">
+              {profile.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt={`Avatar de ${displayName}`}
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <div
-                  className={`grid gap-5 ${
-                    isPublicView
-                      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                      : "grid-cols-1 gap-4 sm:grid-cols-2"
-                  }`}
-                >
-                  {profile.portfolios.map((p) => (
-                    <ProfilePortfolioCard
-                      key={p._id}
-                      portfolio={p}
-                      isPublicView={isPublicView}
-                    />
-                  ))}
+                <div className="w-full h-full flex items-center justify-center bg-secondary text-secondary-foreground text-4xl md:text-5xl font-bold">
+                  {displayName.charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
-          )}
+          </div>
 
-          {activeTab === "critiques" && (
-            <div className={isPublicView ? "grid grid-cols-1 lg:grid-cols-2 gap-4" : "space-y-4"}>
-              {profile.critiquesGiven.length === 0 ? (
-                <EmptyTabState
-                  icon={<MessageSquare className="h-12 w-12" />}
-                  title={
-                    isOwner
-                      ? "Nenhuma crítica ainda"
-                      : "Sem críticas publicadas"
-                  }
-                  message={
-                    isOwner
-                      ? "Você ainda não deixou nenhuma crítica. Explore o feed e ajude outros a crescer com seu feedback construtivo."
-                      : `${displayName} ainda não deixou críticas em portfólios.`
-                  }
-                  isOwner={isOwner}
-                  ownerCta={{ label: "Explorar feed", href: "/" }}
-                />
-              ) : (
-                profile.critiquesGiven.map((c) => (
-                  <ProfileCritiqueCard key={c._id} critique={c} isPublicView={isPublicView} />
-                ))
+          {/* Info block - below banner */}
+          <div className="flex-1 min-w-0 pb-2 md:pb-4">
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              <h1 className="text-4xl md:text-5xl font-headline italic text-primary leading-none">
+                {displayName}
+              </h1>
+
+              {/* Area badge */}
+              {profile.primaryArea && (
+                <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
+                  {profile.primaryArea}
+                </span>
+              )}
+
+              {/* Availability badge — only for owner */}
+              {isOwner && profile.availabilityStatus === "available" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                  Disponível
+                </span>
               )}
             </div>
-          )}
+
+            {/* Bio */}
+            {profile.bio && (
+              <p className="text-on-surface-variant text-base max-w-2xl mb-3">
+                {profile.bio}
+              </p>
+            )}
+
+            {/* Social links - icon only */}
+            {profile.socialLinks && (
+              <div className="flex flex-wrap gap-3">
+                {profile.socialLinks.github && (
+                  <a
+                    href={profile.socialLinks.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-md bg-surface-container-high/50 border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:border-primary/30 transition"
+                    aria-label="GitHub"
+                  >
+                    <Github className="h-5 w-5" />
+                  </a>
+                )}
+                {profile.socialLinks.twitter && (
+                  <a
+                    href={profile.socialLinks.twitter}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-md bg-surface-container-high/50 border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:border-primary/30 transition"
+                    aria-label="X (Twitter)"
+                  >
+                    <Twitter className="h-5 w-5" />
+                  </a>
+                )}
+                {profile.socialLinks.linkedin && (
+                  <a
+                    href={profile.socialLinks.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-md bg-surface-container-high/50 border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:border-primary/30 transition"
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin className="h-5 w-5" />
+                  </a>
+                )}
+                {profile.socialLinks.website && (
+                  <a
+                    href={profile.socialLinks.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-md bg-surface-container-high/50 border border-outline-variant/30 text-on-surface-variant hover:text-primary hover:border-primary/30 transition"
+                    aria-label="Website"
+                  >
+                    <Globe className="h-5 w-5" />
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Owner actions */}
+            {isOwner && (
+              <div className="flex flex-wrap items-center gap-3 pt-3">
+                <Link
+                  href="/setup-profile"
+                  className="rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted transition flex items-center gap-1.5"
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                  Editar perfil
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleAvailabilityToggle}
+                  disabled={isTogglingAvailability}
+                  className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted transition disabled:opacity-50 cursor-pointer"
+                  aria-label={
+                    profile.availabilityStatus === "available"
+                      ? "Marcar como indisponível"
+                      : "Marcar como disponível"
+                  }
+                >
+                  {profile.availabilityStatus === "available" ? (
+                    <ToggleRight className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <ToggleLeft className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  {profile.availabilityStatus === "available"
+                    ? "Disponível"
+                    : "Indisponível"}
+                </button>
+              </div>
+            )}
+
+            {/* Public view CTAs - only View Portfolio button */}
+            {isPublicView && profile.portfolios.length > 0 && (
+              <div className="flex flex-wrap items-center gap-3 pt-3">
+                <Link
+                  href={`/portfolio/${profile.portfolios[0]._id}`}
+                  className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition"
+                >
+                  <Eye className="h-4 w-4" />
+                  Ver portfólio
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Stats row - below avatar section */}
+        {isOwner && hasNoActivity ? (
+          <ZeroActivityOnboarding />
+        ) : (
+          <StatsSection
+            portfoliosCount={profile.portfoliosCount}
+            critiquesGivenCount={profile.critiquesGivenCount}
+            upvotesReceivedCount={profile.upvotesReceivedCount}
+            isPublicView={isPublicView}
+          />
+        )}
+
+        {isOwner && <ActivitySection profile={profile} />}
+
+        {/* Tabs */}
+        <div>
+          <div className="relative border-b border-outline-variant/30" ref={tabsRef}>
+            <div
+              className="absolute bottom-0 h-0.5 bg-primary transition-all duration-300 ease-out"
+              style={{
+                left: tabIndicatorStyle.left,
+                width: tabIndicatorStyle.width,
+              }}
+            />
+            <div className="flex gap-1">
+              <TabButton
+                active={activeTab === "portfolios"}
+                onClick={(e) => handleTabClick("portfolios", e)}
+                count={profile.portfolios.length}
+              >
+                <BookOpen className="h-4 w-4 inline mr-1.5" />
+                Portfólios
+              </TabButton>
+              <TabButton
+                active={activeTab === "critiques"}
+                onClick={(e) => handleTabClick("critiques", e)}
+                count={profile.critiquesGiven.length}
+              >
+                <MessageSquare className="h-4 w-4 inline mr-1.5" />
+                Críticas
+              </TabButton>
+            </div>
+          </div>
+
+          <div className="mt-6 animate-in fade-in duration-300" key={activeTab}>
+            {activeTab === "portfolios" && (
+              <div>
+                {profile.portfolios.length === 0 ? (
+                  <EmptyTabState
+                    icon={<BookOpen className="h-12 w-12" />}
+                    title={
+                      isOwner
+                        ? "Nenhum portfólio ainda"
+                        : "Sem portfólios públicos"
+                    }
+                    message={
+                      isOwner
+                        ? "Você ainda não submeteu nenhum portfólio. Comece a mostrar seu trabalho para a comunidade."
+                        : `${displayName} ainda não possui portfólios publicados.`
+                    }
+                    isOwner={isOwner}
+                    ownerCta={{ label: "Submeter portfólio", href: "/submit" }}
+                  />
+                ) : (
+                  <div
+                    className={`grid gap-5 ${
+                      isPublicView
+                        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                        : "grid-cols-1 gap-4 sm:grid-cols-2"
+                    }`}
+                  >
+                    {profile.portfolios.map((p) => (
+                      <ProfilePortfolioCard
+                        key={p._id}
+                        portfolio={p}
+                        isPublicView={isPublicView}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "critiques" && (
+              <div className={isPublicView ? "grid grid-cols-1 lg:grid-cols-2 gap-4" : "space-y-4"}>
+                {profile.critiquesGiven.length === 0 ? (
+                  <EmptyTabState
+                    icon={<MessageSquare className="h-12 w-12" />}
+                    title={
+                      isOwner
+                        ? "Nenhuma crítica ainda"
+                        : "Sem críticas publicadas"
+                    }
+                    message={
+                      isOwner
+                        ? "Você ainda não deixou nenhuma crítica. Explore o feed e ajude outros a crescer com seu feedback construtivo."
+                        : `${displayName} ainda não deixou críticas em portfólios.`
+                    }
+                    isOwner={isOwner}
+                    ownerCta={{ label: "Explorar feed", href: "/" }}
+                  />
+                ) : (
+                  profile.critiquesGiven.map((c) => (
+                    <ProfileCritiqueCard key={c._id} critique={c} isPublicView={isPublicView} />
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5 mt-12 mb-8">
+          <CalendarDays className="h-3.5 w-3.5" />
+          Membro desde {relativeTime(profile.createdAt)}
+        </p>
       </div>
-
-      {/* Inspired CTA — only for public view */}
-      {isPublicView && profile.portfolios.length > 0 && (
-        <div className="rounded-2xl border bg-linear-to-br from-[#a762b5]/5 via-[#a762b5]/10 to-[#a762b5]/5 p-8 text-center space-y-4">
-          <div className="inline-flex items-center justify-center rounded-full bg-[#a762b5]/10 p-4">
-            <Sparkles className="h-6 w-6 text-[#a762b5]" />
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold mb-2">Inspirado por este perfil?</h3>
-            <p className="text-muted-foreground max-w-md mx-auto text-sm">
-              Junte-se à comunidade e comece a construir seu próprio portfólio
-              para receber feedback valioso de outros profissionais.
-            </p>
-          </div>
-          {!isSignedIn && (
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#a762b5] px-6 py-2.5 text-sm font-medium text-white hover:opacity-90 transition shadow-sm"
-            >
-              Criar minha conta gratuita
-            </Link>
-          )}
-          {isSignedIn && (
-            <Link
-              href="/submit"
-              className="inline-flex items-center gap-2 rounded-lg border border-[#a762b5] bg-[#a762b5]/10 px-6 py-2.5 text-sm font-medium text-[#a762b5] hover:bg-[#a762b5]/20 transition"
-            >
-              <BookOpen className="h-4 w-4" />
-              Submeter meu portfólio
-            </Link>
-          )}
-        </div>
-      )}
-
-      <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5">
-        <CalendarDays className="h-3.5 w-3.5" />
-        Membro desde {relativeTime(profile.createdAt)}
-      </p>
     </div>
   );
 }
@@ -549,9 +477,9 @@ function WelcomeSection({
   const timeMessage = getTimeBasedMessage();
 
   return (
-    <div className="relative overflow-hidden rounded-xl border bg-linear-to-br from-[#a762b5]/5 via-background to-background p-6 animate-in fade-in duration-500">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-[#a762b5]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#a762b5]/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+    <div className="relative overflow-hidden rounded-xl border bg-linear-to-br from-primary/5 via-background to-background p-6 animate-in fade-in duration-500">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
 
       <div className="relative flex flex-col sm:flex-row gap-4 items-start sm:items-center">
         <div className="flex items-center gap-3">
@@ -559,10 +487,10 @@ function WelcomeSection({
             <img
               src={avatarUrl}
               alt={displayName}
-              className="h-12 w-12 rounded-full object-cover ring-2 ring-[#a762b5]/20"
+              className="h-12 w-12 rounded-full object-cover ring-2 ring-primary/20"
             />
           ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#a762b5]/10 text-xl font-semibold text-[#a762b5]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-xl font-semibold text-primary">
               {displayName.charAt(0).toUpperCase()}
             </div>
           )}
@@ -600,7 +528,7 @@ function QuickStat({
 }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span className="text-[#a762b5]">{icon}</span>
+      <span className="text-primary">{icon}</span>
       <span className="font-semibold">{value}</span>
       <span className="text-muted-foreground hidden sm:inline">{label}</span>
     </div>
@@ -618,9 +546,9 @@ function QuickActionsPanel({
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       <Link
         href="/submit"
-        className="group flex items-center gap-3 rounded-xl border bg-[#a762b5]/5 hover:bg-[#a762b5]/10 p-4 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a762b5]/50"
+        className="group flex items-center gap-3 rounded-xl border bg-primary/5 hover:bg-primary/10 p-4 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
       >
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#a762b5]/10 text-[#a762b5] group-hover:scale-110 transition-transform">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
           <Plus className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
@@ -650,7 +578,7 @@ function QuickActionsPanel({
         className={cn(
           "group flex items-center gap-3 rounded-xl border p-4 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring text-left w-full",
           activeTab === "critiques"
-            ? "bg-muted border-[#a762b5]/30"
+            ? "bg-muted border-primary/30"
             : "bg-muted/50 hover:bg-muted"
         )}
       >
@@ -658,7 +586,7 @@ function QuickActionsPanel({
           className={cn(
             "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
             activeTab === "critiques"
-              ? "bg-[#a762b5]/10 text-[#a762b5]"
+              ? "bg-primary/10 text-primary"
               : "bg-secondary text-secondary-foreground group-hover:scale-110"
           )}
         >
@@ -687,7 +615,7 @@ function StatsSection({
 }) {
   if (isPublicView) {
     return (
-      <div className="flex flex-wrap gap-6 rounded-xl border bg-card p-4">
+      <div className="flex flex-wrap gap-6 rounded-xl border bg-card p-4 mt-8">
         <QuickStat icon={<BookOpen className="h-4 w-4" />} value={portfoliosCount} label="portfólios" />
         <QuickStat icon={<MessageSquare className="h-4 w-4" />} value={critiquesGivenCount} label="críticas" />
         <QuickStat icon={<ThumbsUp className="h-4 w-4" />} value={upvotesReceivedCount} label="upvotes" />
@@ -696,11 +624,11 @@ function StatsSection({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <Card className="p-4 group hover:border-[#a762b5]/30 transition-colors">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+      <Card className="p-4 group hover:border-primary/30 transition-colors">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#a762b5]/10 text-[#a762b5]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <BookOpen className="h-4 w-4" />
             </div>
             <div>
@@ -711,10 +639,10 @@ function StatsSection({
         </div>
       </Card>
 
-      <Card className="p-4 group hover:border-[#a762b5]/30 transition-colors">
+      <Card className="p-4 group hover:border-primary/30 transition-colors">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#a762b5]/10 text-[#a762b5]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <MessageSquare className="h-4 w-4" />
             </div>
             <div>
@@ -725,10 +653,10 @@ function StatsSection({
         </div>
       </Card>
 
-      <Card className="p-4 group hover:border-[#a762b5]/30 transition-colors">
+      <Card className="p-4 group hover:border-primary/30 transition-colors">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#a762b5]/10 text-[#a762b5]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <ThumbsUp className="h-4 w-4" />
             </div>
             <div>
@@ -758,7 +686,7 @@ function ActivitySection({ profile }: { profile: ProfileData }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-[#a762b5]" />
+        <Sparkles className="h-4 w-4 text-primary" />
         <h3 className="text-sm font-medium">Atividade Recente</h3>
       </div>
 
@@ -769,8 +697,8 @@ function ActivitySection({ profile }: { profile: ProfileData }) {
             href={`/portfolio/${critique.portfolioId}`}
             className="flex items-start gap-3 rounded-lg border p-3 hover:bg-muted/50 transition cursor-pointer"
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#a762b5]/10 text-[#a762b5]">
-              <Star className="h-4 w-4 fill-[#a762b5] text-[#a762b5]" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Star className="h-4 w-4 fill-primary text-primary" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium truncate">
@@ -793,8 +721,8 @@ function ActivitySection({ profile }: { profile: ProfileData }) {
 function ZeroActivityOnboarding() {
   return (
     <Card className="p-8 text-center">
-      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#a762b5]/10">
-        <Sparkles className="h-8 w-8 text-[#a762b5]" />
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+        <Sparkles className="h-8 w-8 text-primary" />
       </div>
       <h3 className="text-lg font-semibold mb-2">Bem-vindo ao PeerFolio</h3>
       <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
@@ -837,7 +765,7 @@ function TabButton({
       className={cn(
         "relative px-4 py-3 text-sm font-medium transition-colors cursor-pointer",
         active
-          ? "text-[#a762b5]"
+          ? "text-primary"
           : "text-muted-foreground hover:text-foreground"
       )}
     >
@@ -847,7 +775,7 @@ function TabButton({
           className={cn(
             "ml-1.5 rounded-full px-2 py-0.5 text-xs transition-colors",
             active
-              ? "bg-[#a762b5]/10 text-[#a762b5]"
+              ? "bg-primary/10 text-primary"
               : "bg-muted text-muted-foreground"
           )}
         >
@@ -918,12 +846,11 @@ function ProfilePortfolioCard({
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-xl border bg-card transition-all duration-300",
         isPublicView
-          ? "hover:shadow-lg hover:-translate-y-1 hover:border-[#a762b5]/30"
+          ? "hover:shadow-lg hover:-translate-y-1 hover:border-primary/30"
           : "hover:shadow-md",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
       )}
     >
-      {/* Preview thumbnail with hover overlay */}
       <div
         className={cn(
           "relative w-full overflow-hidden rounded-t-xl bg-muted",
@@ -946,17 +873,15 @@ function ProfilePortfolioCard({
           </div>
         )}
 
-        {/* Hover overlay with CTA — only for public view */}
         {isPublicView && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#a762b5]/80 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <span className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#a762b5] shadow-lg flex items-center gap-2">
+          <div className="absolute inset-0 flex items-center justify-center bg-primary/80 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            <span className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary shadow-lg flex items-center gap-2">
               <Eye className="h-4 w-4" />
               Ver portfólio
             </span>
           </div>
         )}
 
-        {/* Area badge */}
         <div className="absolute left-3 top-3">
           <span className="inline-flex items-center rounded-full bg-background/90 px-2.5 py-0.5 text-xs font-semibold shadow-xs backdrop-blur-xs">
             {portfolio.area}
@@ -964,7 +889,6 @@ function ProfilePortfolioCard({
         </div>
       </div>
 
-      {/* Info */}
       <div className="p-4 space-y-2">
         <div className="flex items-start justify-between gap-2">
           <h3
@@ -981,7 +905,6 @@ function ProfilePortfolioCard({
         </p>
       </div>
 
-      {/* Stats bar */}
       <div className="px-4 pb-4 flex items-center justify-between border-t pt-3 mt-auto">
         <div className="flex items-center gap-3 text-xs">
           {portfolio.averageRating > 0 && (
@@ -996,7 +919,7 @@ function ProfilePortfolioCard({
           </span>
         </div>
         {isPublicView && (
-          <span className="text-xs text-[#a762b5] font-medium group-hover:translate-x-1 transition-transform">
+          <span className="text-xs text-primary font-medium group-hover:translate-x-1 transition-transform">
             Ver →
           </span>
         )}
@@ -1033,7 +956,6 @@ function ProfileCritiqueCard({
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        {/* Portfolio link or deleted label */}
         {isDeleted ? (
           <span className="text-xs text-muted-foreground italic">
             Portfólio removido pelo autor
