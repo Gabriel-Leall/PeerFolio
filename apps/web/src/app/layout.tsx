@@ -6,6 +6,7 @@ import { Newsreader, Manrope, Space_Grotesk } from "next/font/google";
 
 import Header from "@/components/header";
 import Providers from "@/components/providers";
+import { FloatingSubmitButton } from "@/components/floating-submit-button";
 
 const newsreader = Newsreader({
   variable: "--font-newsreader",
@@ -41,6 +42,7 @@ export default function RootLayout({
               <Header />
               {children}
             </div>
+            <FloatingSubmitButton />
           </Providers>
         </ClerkProvider>
       </body>

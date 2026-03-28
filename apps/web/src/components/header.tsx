@@ -76,16 +76,13 @@ export default function Header() {
   const isLandingPage = pathname === "/";
 
   const landingLinks = [
-    { to: "/feed", label: "Explorar" },
     { to: "#portfolios", label: "Comunidade" },
   ] as const;
 
-  const appLinks = [
-    { to: "/feed", label: "Feed" },
-    { to: "/submit", label: "Submeter" },
-  ] as const;
+  const appLinks: { to: string; label: string }[] = [];
 
   const links = isLandingPage ? landingLinks : appLinks;
+  const logoHref = isSignedIn ? "/feed" : "/";
 
   const authSection = (
     <div className="flex items-center gap-3">
@@ -237,7 +234,7 @@ export default function Header() {
       <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-[#0a0a0a]/70 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
           <Link
-            href="/"
+            href={logoHref}
             className="font-serif text-3xl font-bold tracking-tight text-white italic transition-transform hover:scale-[1.02]"
           >
             PeerFolio
@@ -267,7 +264,7 @@ export default function Header() {
       <div className="mx-auto flex h-16 w-full items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-8">
           <Link
-            href="/"
+            href={logoHref}
             className="font-serif text-2xl font-bold tracking-tight text-white italic transition-transform hover:scale-[1.02]"
           >
             PeerFolio

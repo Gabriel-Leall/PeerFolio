@@ -5,14 +5,42 @@ import { Button } from "@PeerFolio/ui/components/button";
 import { usePaginatedQuery } from "convex/react";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 
 import { FeedCard, FeedCardSkeleton } from "@/components/feed/FeedCard";
 import type { FeedCardData } from "@/components/feed/FeedCard";
-import { FeedCategoryPills } from "@/components/feed/FeedCategoryPills";
-import type { CategoryValue } from "@/components/feed/FeedCategoryPills";
-import { FeedHero } from "@/components/feed/FeedHero";
 import { PortfolioPreviewModal } from "@/components/feed/PortfolioPreviewModal";
-import { FeedTabs, type FeedFilter } from "@/components/FeedTabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@PeerFolio/ui/components/dropdown-menu";
+import { cn } from "@PeerFolio/ui/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Constants for Inline Filters
+// ---------------------------------------------------------------------------
+
+const CATEGORIES = [
+  { label: "todos os tópicos", value: undefined },
+  { label: "Frontend", value: "Frontend" },
+  { label: "Backend", value: "Backend" },
+  { label: "Fullstack", value: "Fullstack" },
+  { label: "UI/UX", value: "UI/UX" },
+  { label: "Mobile", value: "Mobile" },
+  { label: "Outros", value: "Other" },
+] as const;
+
+const FILTERS = [
+  { label: "recentes", value: "latest" },
+  { label: "melhores avaliados", value: "topRated" },
+] as const;
+
+const FEEDBACK_POSITIONS = [11, 47, 59];
+
+type FeedFilter = "latest" | "topRated";
+type CategoryValue = "Frontend" | "Backend" | "Fullstack" | "UI/UX" | "Mobile" | "Other" | undefined;
 
 // ---------------------------------------------------------------------------
 // Mock data — rendered when the database has no real portfolios yet
@@ -218,8 +246,6 @@ export default function FeedPage() {
   const hasResults = results && results.length > 0;
   const isExhausted = status === "Exhausted";
 
-  // Show mock data when the DB is empty and no area filter is active.
-  // This lets designers / reviewers validate the layout without seeding the DB.
   const showMocks = isExhausted && !hasResults && !selectedArea;
   const displayItems: FeedCardData[] = hasResults
     ? (results as unknown as FeedCardData[])
@@ -227,82 +253,179 @@ export default function FeedPage() {
       ? MOCK_PORTFOLIOS
       : [];
 
+  const isFeedbackPosition = (idx: number) => FEEDBACK_POSITIONS.includes(idx);
+
+  const getFeedbackCard = (position: number) => {
+    return (
+      <div
+        key={`feedback-${position}`}
+        className={`relative flex flex-col items-center justify-center p-8 rounded-2xl bg-[#0a0a0a] border border-white/5 min-h-[320px] lg:min-h-[380px] ${
+          position % 3 === 1 ? "sm:mt-12" : position % 3 === 2 ? "lg:mt-6" : ""
+        }`}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-50 rounded-2xl" />
+        <div className="relative z-10 text-center max-w-xs">
+          <p className="font-serif text-2xl sm:text-3xl lg:text-4xl text-white/90 leading-tight mb-6 italic">
+            Moldando o Etéreo
+          </p>
+          <p className="font-sans text-sm sm:text-base text-white/50 leading-relaxed mb-8">
+            Tem ideias de como melhorar o PeerFolio? Deixe seu feedback.
+          </p>
+          <Button
+            variant="ghost"
+            size="lg"
+            className="text-white/70 border border-white/10 hover:bg-white/5 hover:text-white hover:border-white/20 transition-all duration-300 rounded-lg px-6"
+          >
+            Contribuir feedback
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderGridItems = () => {
+    const items: React.ReactNode[] = [];
+    let feedbackIndex = 0;
+
+    displayItems.forEach((portfolio, idx) => {
+      if (isFeedbackPosition(idx) && idx < displayItems.length) {
+        const feedbackPos = FEEDBACK_POSITIONS[feedbackIndex];
+        items.push(getFeedbackCard(feedbackPos));
+        feedbackIndex++;
+      }
+
+      items.push(
+        <div
+          key={portfolio._id}
+          className={
+            (idx + feedbackIndex) % 3 === 1
+              ? "sm:mt-12"
+              : (idx + feedbackIndex) % 3 === 2
+                ? "lg:mt-6"
+                : ""
+          }
+        >
+          <FeedCard
+            portfolio={portfolio}
+            onOpenModal={(p) => setPreviewPortfolio(p)}
+          />
+        </div>
+      );
+    });
+
+    return items;
+  };
+
   return (
     <div className="min-h-screen">
       {/* ------------------------------------------------------------------ */}
-      {/* Page Header + Hero                                                   */}
+      {/* Static Header                                                      */}
       {/* ------------------------------------------------------------------ */}
-      <div className="border-b border-border/5 bg-surface-container-low/40">
-        <div className="container mx-auto max-w-7xl px-4 pt-12 pb-10">
-          <FeedHero />
+      <div className="relative w-full py-10 md:py-16 border-b border-transparent">
+        <div className="container mx-auto max-w-7xl px-4 text-center">
+          {/* Background Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30rem] h-[30rem] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
 
-          <FeedCategoryPills
-            selected={selectedArea}
-            onSelect={setSelectedArea}
-            className="mt-6"
-          />
-        </div>
-      </div>
+          {/* Title */}
+          <h1 className="relative font-serif font-light tracking-tight text-foreground mx-auto max-w-6xl leading-snug mb-4">
+            <span className="flex flex-wrap items-baseline justify-center gap-x-1 sm:gap-x-2 gap-y-1">
+              <span className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-tighter">Explorando obras</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <button className="inline-flex items-baseline justify-center text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary italic hover:opacity-80 transition-opacity decoration-primary/30 underline-offset-[6px] outline-none group focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm ml-1 sm:ml-2 mr-2 sm:mr-3" />
+                  }
+                >
+                  <span className="border-b-2 border-primary/30 group-hover:border-primary/60 transition-colors cursor-pointer pb-0.5 sm:pb-1 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
+                    {FILTERS.find(f => f.value === currentFilter)?.label}
+                  </span>
+                  <ChevronDown className="ml-1 text-primary w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="center"
+                  className="w-56 bg-[#131313]/95 backdrop-blur-xl border-white/10 text-white rounded-xl p-2"
+                >
+                  {FILTERS.map((f) => (
+                    <DropdownMenuItem
+                      key={f.value}
+                      onClick={() => setCurrentFilter(f.value)}
+                      className={cn(
+                        "rounded-lg cursor-pointer transition-colors px-3 py-2 text-sm font-sans",
+                        currentFilter === f.value
+                          ? "bg-primary/20 text-primary focus:bg-primary/30 focus:text-primary font-medium"
+                          : "hover:bg-white/5 focus:bg-white/5 text-white/80"
+                      )}
+                    >
+                      {f.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <span className="opacity-80 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl mr-1 sm:mr-2">em</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <button className="inline-flex items-baseline justify-center text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary italic hover:opacity-80 transition-opacity decoration-primary/30 underline-offset-[6px] outline-none group focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm" />
+                  }
+                >
+                  <span className="border-b-2 border-primary/30 group-hover:border-primary/60 transition-colors cursor-pointer pb-0.5 sm:pb-1 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
+                    {CATEGORIES.find(c => c.value === selectedArea)?.label}
+                  </span>
+                  <ChevronDown className="ml-1 text-primary w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="center"
+                  className="w-56 bg-[#131313]/95 backdrop-blur-xl border-white/10 text-white rounded-xl p-2 max-h-[60vh] overflow-y-auto"
+                >
+                  {CATEGORIES.map((cat) => (
+                    <DropdownMenuItem
+                      key={cat.label}
+                      onClick={() => setSelectedArea(cat.value)}
+                      className={cn(
+                        "rounded-lg cursor-pointer transition-colors px-3 py-2 text-sm font-sans",
+                        selectedArea === cat.value
+                          ? "bg-primary/20 text-primary focus:bg-primary/30 focus:text-primary font-medium"
+                          : "hover:bg-white/5 focus:bg-white/5 text-white/80"
+                      )}
+                    >
+                      {cat.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </span>
+          </h1>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Sticky Sort Tabs                                                     */}
-      {/* ------------------------------------------------------------------ */}
-      <div className="sticky top-0 z-30 border-b border-border/5 bg-background/95 backdrop-blur-sm">
-        <div className="container mx-auto max-w-7xl px-4">
-          <FeedTabs
-            currentFilter={currentFilter}
-            onFilterChange={setCurrentFilter}
-          />
+          {/* Description */}
+          <div className="mt-4 sm:mt-6">
+            <p className="font-sans text-muted-foreground max-w-2xl mx-auto text-base sm:text-lg lg:text-xl leading-relaxed">
+              Uma curadoria de craftsmanship digital, portfólios de excelência e
+              trabalhos que inspiram. Explore, critique e evolua.
+            </p>
+          </div>
         </div>
       </div>
 
       {/* ------------------------------------------------------------------ */}
       {/* Content Grid                                                         */}
       {/* ------------------------------------------------------------------ */}
-      <div className="container mx-auto max-w-7xl px-4 py-10">
-
-        {/* Mock banner — only shown when displaying demo data */}
-        {showMocks && (
-          <div className="mb-8 flex items-center gap-2.5 rounded-md border border-primary/20 bg-primary/5 px-4 py-2.5 text-xs text-primary/70">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse shrink-0" />
-            <span>
-              <strong className="font-semibold text-primary">Modo visualização</strong>
-              {" "}— Estes são dados de demonstração. Submeta um portfólio para ver os dados reais.
-            </span>
-          </div>
-        )}
+      <div className="container mx-auto max-w-7xl px-4 py-4">
 
         {/* Grid */}
         {(displayItems.length > 0 || isFirstLoad) && (
           <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-            {displayItems.map((portfolio, idx) => (
-              <div
-                key={portfolio._id}
-                className={
-                  idx % 3 === 1
-                    ? "sm:mt-12"
-                    : idx % 3 === 2
-                      ? "lg:mt-6"
-                      : ""
-                }
-              >
-                <FeedCard
-                  portfolio={portfolio}
-                  onOpenModal={(p) => setPreviewPortfolio(p)}
-                />
-              </div>
-            ))}
-
-            {/* Skeleton placeholders on first load */}
-            {isFirstLoad &&
-              Array.from({ length: 12 }).map((_, i) => (
-                <div
-                  key={`skeleton-${i}`}
-                  className={i % 3 === 1 ? "sm:mt-12" : ""}
-                >
-                  <FeedCardSkeleton />
-                </div>
-              ))}
+            {displayItems.length > 0 ? renderGridItems() : (
+              <>
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div
+                    key={`skeleton-${i}`}
+                    className={i % 3 === 1 ? "sm:mt-12" : ""}
+                  >
+                    <FeedCardSkeleton />
+                  </div>
+                ))}
+              </>
+            )}
 
             {isLoadingMore &&
               Array.from({ length: 6 }).map((_, i) => (
