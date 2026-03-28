@@ -115,6 +115,34 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_portfolioId_userId", ["portfolioId", "userId"]),
 
+  favorites: defineTable({
+    portfolioId: v.id("portfolios"),
+    userId: v.id("users"),
+    createdAt: v.number(),
+  }).index("by_userId_portfolioId", ["userId", "portfolioId"])
+    .index("by_userId_createdAt", ["userId", "createdAt"]),
+
+  reports: defineTable({
+    targetId: v.union(v.id("portfolios"), v.id("critiques")),
+    targetType: v.union(v.literal("portfolio"), v.literal("critique")),
+    reason: v.union(
+      v.literal("SPAM"),
+      v.literal("PLAGIARISM"),
+      v.literal("DUPLICATE"),
+      v.literal("INAPPROPRIATE"),
+      v.literal("NOT_PORTFOLIO"),
+      v.literal("OFFENSIVE"),
+      v.literal("HARASSMENT"),
+      v.literal("FAKE_REVIEW"),
+      v.literal("OTHER")
+    ),
+    description: v.optional(v.string()),
+    reportedBy: v.id("users"),
+    status: v.union(v.literal("pending"), v.literal("reviewed"), v.literal("dismissed")),
+    createdAt: v.number(),
+  }).index("by_targetId", ["targetId"])
+    .index("by_reportedBy_createdAt", ["reportedBy", "createdAt"]),
+
   notifications: defineTable({
     userId: v.id("users"),
     type: v.union(v.literal("portfolio_offline")),
