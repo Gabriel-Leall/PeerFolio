@@ -40,7 +40,14 @@ const FILTERS = [
 const FEEDBACK_POSITIONS = [11, 47, 59];
 
 type FeedFilter = "latest" | "topRated";
-type CategoryValue = "Frontend" | "Backend" | "Fullstack" | "UI/UX" | "Mobile" | "Other" | undefined;
+type CategoryValue =
+  | "Frontend"
+  | "Backend"
+  | "Fullstack"
+  | "UI/UX"
+  | "Mobile"
+  | "Other"
+  | undefined;
 
 // ---------------------------------------------------------------------------
 // Mock data — rendered when the database has no real portfolios yet
@@ -231,13 +238,14 @@ const MOCK_PORTFOLIOS: FeedCardData[] = [
 export default function FeedPage() {
   const [currentFilter, setCurrentFilter] = useState<FeedFilter>("latest");
   const [selectedArea, setSelectedArea] = useState<CategoryValue>(undefined);
-  const [previewPortfolio, setPreviewPortfolio] =
-    useState<FeedCardData | null>(null);
+  const [previewPortfolio, setPreviewPortfolio] = useState<FeedCardData | null>(
+    null,
+  );
 
   const { results, status, loadMore } = usePaginatedQuery(
     api.portfolios.queries.list,
     { filter: currentFilter, area: selectedArea },
-    { initialNumItems: 12 }
+    { initialNumItems: 12 },
   );
 
   const isFirstLoad = status === "LoadingFirstPage";
@@ -309,7 +317,7 @@ export default function FeedPage() {
             portfolio={portfolio}
             onOpenModal={(p) => setPreviewPortfolio(p)}
           />
-        </div>
+        </div>,
       );
     });
 
@@ -329,7 +337,9 @@ export default function FeedPage() {
           {/* Title */}
           <h1 className="relative font-serif font-light tracking-tight text-foreground mx-auto max-w-6xl leading-snug mb-4">
             <span className="flex flex-wrap items-baseline justify-center gap-x-1 sm:gap-x-2 gap-y-1">
-              <span className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-tighter">Explorando obras</span>
+              <span className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-tighter">
+                Explorando obras
+              </span>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
@@ -337,7 +347,7 @@ export default function FeedPage() {
                   }
                 >
                   <span className="border-b-2 border-primary/30 group-hover:border-primary/60 transition-colors cursor-pointer pb-0.5 sm:pb-1 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
-                    {FILTERS.find(f => f.value === currentFilter)?.label}
+                    {FILTERS.find((f) => f.value === currentFilter)?.label}
                   </span>
                   <ChevronDown className="ml-1 text-primary w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />
                 </DropdownMenuTrigger>
@@ -353,7 +363,7 @@ export default function FeedPage() {
                         "rounded-lg cursor-pointer transition-colors px-3 py-2 text-sm font-sans",
                         currentFilter === f.value
                           ? "bg-primary/20 text-primary focus:bg-primary/30 focus:text-primary font-medium"
-                          : "hover:bg-white/5 focus:bg-white/5 text-white/80"
+                          : "hover:bg-white/5 focus:bg-white/5 text-white/80",
                       )}
                     >
                       {f.label}
@@ -361,7 +371,9 @@ export default function FeedPage() {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <span className="opacity-80 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl mr-1 sm:mr-2">em</span>
+              <span className="opacity-80 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl mr-1 sm:mr-2">
+                em
+              </span>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
@@ -369,7 +381,7 @@ export default function FeedPage() {
                   }
                 >
                   <span className="border-b-2 border-primary/30 group-hover:border-primary/60 transition-colors cursor-pointer pb-0.5 sm:pb-1 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
-                    {CATEGORIES.find(c => c.value === selectedArea)?.label}
+                    {CATEGORIES.find((c) => c.value === selectedArea)?.label}
                   </span>
                   <ChevronDown className="ml-1 text-primary w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />
                 </DropdownMenuTrigger>
@@ -385,7 +397,7 @@ export default function FeedPage() {
                         "rounded-lg cursor-pointer transition-colors px-3 py-2 text-sm font-sans",
                         selectedArea === cat.value
                           ? "bg-primary/20 text-primary focus:bg-primary/30 focus:text-primary font-medium"
-                          : "hover:bg-white/5 focus:bg-white/5 text-white/80"
+                          : "hover:bg-white/5 focus:bg-white/5 text-white/80",
                       )}
                     >
                       {cat.label}
@@ -410,11 +422,12 @@ export default function FeedPage() {
       {/* Content Grid                                                         */}
       {/* ------------------------------------------------------------------ */}
       <div className="container mx-auto max-w-7xl px-4 py-4">
-
         {/* Grid */}
         {(displayItems.length > 0 || isFirstLoad) && (
           <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-            {displayItems.length > 0 ? renderGridItems() : (
+            {displayItems.length > 0 ? (
+              renderGridItems()
+            ) : (
               <>
                 {Array.from({ length: 12 }).map((_, i) => (
                   <div
