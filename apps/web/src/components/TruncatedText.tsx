@@ -16,9 +16,8 @@ export function TruncatedText({ text, maxLength = 60, className }: TruncatedText
 
   return (
     <span
-      className={cn("cursor-help underline decoration-dotted underline-offset-2", className)}
       title={text}
-      aria-label={text}
+      className={cn("cursor-help underline decoration-dotted underline-offset-2", className)}
     >
       {truncated}
     </span>
