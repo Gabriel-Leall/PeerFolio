@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Tooltip } from "@heroui/react";
 import { cn } from "@PeerFolio/ui/lib/utils";
 
 interface TruncatedTextProps {
@@ -16,10 +15,11 @@ export function TruncatedText({ text, maxLength = 60, className }: TruncatedText
   const truncated = text.slice(0, maxLength).trimEnd() + "…";
 
   return (
-    <Tooltip content={text} delay={500} closeDelay={100}>
-      <span className={cn("cursor-help underline decoration-dotted underline-offset-2", className)}>
-        {truncated}
-      </span>
-    </Tooltip>
+    <span
+      title={text}
+      className={cn("cursor-help underline decoration-dotted underline-offset-2", className)}
+    >
+      {truncated}
+    </span>
   );
 }

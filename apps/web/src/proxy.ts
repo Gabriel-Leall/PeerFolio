@@ -13,13 +13,14 @@ export default clerkMiddleware(async (auth, req) => {
       return authObj.redirectToSignIn();
     }
 
-    // Check nickname if not hitting setup-profile
     if (!req.nextUrl.pathname.startsWith("/setup-profile")) {
       try {
         const token = await authObj.getToken({ template: "convex" });
         if (token) {
           convex.setAuth(token);
-          const user = await convex.query(api.users.queries.getProfile, { userId: authObj.userId });
+          const user = await convex.query(api.users.queries.getProfile, {
+            userId: authObj.userId,
+          });
           if (user && !user.nickname) {
             const url = new URL("/setup-profile", req.url);
             url.searchParams.set("redirect", req.nextUrl.pathname);
@@ -27,8 +28,7 @@ export default clerkMiddleware(async (auth, req) => {
           }
         }
       } catch (error) {
-        // If query fails (like user not existing yet in convex), ignore and let components handle it
-        console.error("Middleware Convex check failed", error);
+        console.error("Proxy Convex check failed:", error);
       }
     }
   }

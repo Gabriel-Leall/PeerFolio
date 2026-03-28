@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Card, CardFooter, Image } from "@heroui/react";
 import { usePaginatedQuery } from "convex/react";
 import { api } from "@PeerFolio/backend/convex/_generated/api";
 
 export function CulturalSpotlight() {
-  const { results, status, loadMore } = usePaginatedQuery(
+  const { results, status } = usePaginatedQuery(
     api.portfolios.queries.list,
     { filter: "topRated" },
     { initialNumItems: 3 },
@@ -40,31 +39,26 @@ export function CulturalSpotlight() {
           </div>
         ) : (
           results.map((portfolio, index) => {
-            // Apply different positioning/styling based on index to mimic the original magazine layout
             const isElevated = index === 1;
 
             return (
-              <Card
+              <Link
                 key={portfolio._id}
-                isPressable
-                as={Link}
                 href={`/portfolio/${portfolio._id}` as any}
-                shadow="lg"
-                className={`group h-125 border-none bg-surface-container hover:bg-surface-container-high transition-all duration-500 rounded-xl ${isElevated ? "md:-mt-12 bg-surface-container-high hover:bg-surface-container-highest" : "md:mt-12"}`}
+                className={`group flex flex-col h-125 border-none rounded-xl overflow-hidden bg-surface-container hover:bg-surface-container-high transition-all duration-500 ${isElevated ? "md:-mt-12 bg-surface-container-high hover:bg-surface-container-highest" : "md:mt-12"}`}
               >
                 <div className="relative h-2/3 w-full overflow-hidden">
-                  <Image
-                    removeWrapper
+                  <img
                     alt={portfolio.title}
-                    className="z-0 w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 rounded-none"
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
                     src={
                       portfolio.previewImageUrl ||
                       "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop"
                     }
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-surface-container-lowest to-transparent opacity-60 z-10"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-surface-container-lowest to-transparent opacity-60 z-10" />
                 </div>
-                <CardFooter className="p-8 flex-col items-start justify-between grow rounded-b-xl">
+                <div className="p-8 flex flex-col items-start justify-between flex-1 rounded-b-xl">
                   <div className="w-full text-left">
                     <span className="text-xs font-label text-primary uppercase tracking-[0.2em] mb-2 block">
                       {portfolio.area || "Objeto Físico"}
@@ -81,8 +75,8 @@ export function CulturalSpotlight() {
                       arrow_forward
                     </span>
                   </div>
-                </CardFooter>
-              </Card>
+                </div>
+              </Link>
             );
           })
         )}

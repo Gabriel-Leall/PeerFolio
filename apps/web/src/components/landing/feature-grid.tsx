@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardBody, CardHeader } from "@heroui/react";
+import { Card, CardHeader } from "@heroui/react";
 
 export function FeatureGrid() {
   return (
@@ -12,13 +12,13 @@ export function FeatureGrid() {
             <span className="material-symbols-outlined text-[2rem] text-[#B89CF8]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
             <h3 className="font-headline text-[2rem] tracking-tight text-[#EAEAEA]">Salas de Crítica</h3>
           </CardHeader>
-          <CardBody className="px-0 py-0 grow content-end flex">
+          <div className="p-0 grow content-end flex">
             <div className="mt-auto">
               <p className="text-[#A1A1AA] text-[15px] font-body max-w-sm leading-relaxed">
                 Espaços privados e criptografados para feedback criativo de alto nível de líderes do setor e colegas.
               </p>
             </div>
-          </CardBody>
+          </div>
         </Card>
         
         <Card className="col-span-1 bg-[#232328] border border-white/5 hover:border-white/10 p-8 rounded-2xl shadow-none flex flex-col overflow-hidden relative">
@@ -26,22 +26,22 @@ export function FeatureGrid() {
           <CardHeader className="flex flex-col items-start px-0 pt-0 pb-4 mt-2">
             <h3 className="font-headline text-[1.5rem] tracking-tight text-[#EAEAEA]">Direitos de Exposição</h3>
           </CardHeader>
-          <CardBody className="px-0 py-0 mt-auto">
+          <div className="p-0 mt-auto">
             <p className="text-[#888890] text-[14px] font-body leading-relaxed">
               Controle total sobre a visibilidade, distribuição e qualidade de arquivamento do seu trabalho.
             </p>
-          </CardBody>
+          </div>
         </Card>
         
         <Card className="col-span-1 bg-[#151515] border border-white/5 hover:border-white/10 p-8 rounded-2xl shadow-none flex flex-col relative group">
           <CardHeader className="flex flex-col items-start px-0 pt-0 pb-4 mt-2">
             <h3 className="font-headline text-[1.5rem] tracking-tight text-[#EAEAEA] group-hover:text-[#B89CF8] transition-colors">API do Cofre</h3>
           </CardHeader>
-          <CardBody className="px-0 py-0 mt-auto">
+          <div className="p-0 mt-auto">
             <p className="text-[#888890] text-[14px] font-body leading-relaxed max-w-[90%]">
               Conecte seus ativos diretamente a fluxos profissionais com integridade sem perdas.
             </p>
-          </CardBody>
+          </div>
         </Card>
         
         <Card className="col-span-1 md:col-span-2 lg:col-span-2 bg-[#1C1C21] border border-white/5 hover:border-white/10 p-8 rounded-2xl shadow-none flex flex-col relative overflow-hidden">
@@ -49,11 +49,11 @@ export function FeatureGrid() {
           <CardHeader className="flex flex-col items-start px-0 pt-0 pb-4 mt-2 relative z-10">
             <h3 className="font-headline text-[2rem] tracking-tight text-[#EAEAEA]">Curadoria Sob Medida</h3>
           </CardHeader>
-          <CardBody className="px-0 py-0 mt-auto relative z-10">
+          <div className="p-0 mt-auto relative z-10">
             <p className="text-[#888890] text-[15px] font-body max-w-md leading-relaxed">
               Nossos algoritmos não seguem tendências; eles analisam intenção, estrutura e ressonância emocional.
             </p>
-          </CardBody>
+          </div>
         </Card>
       </div>
     </section>

@@ -1,4 +1,5 @@
 @import "@PeerFolio/ui/globals.css";
+@import "@heroui/styles";
 
 /* Home page animations (global to avoid styled-jsx SSR/CSR mismatch) */
 @keyframes pf-home-draw-x {

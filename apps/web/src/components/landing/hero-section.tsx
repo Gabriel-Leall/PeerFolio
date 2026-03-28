@@ -52,15 +52,14 @@ export function HeroSection() {
           >
             <FlowButton text="Inscrever-se" />
           </Link>
-          <Button
-            as={Link}
-            href={"/portfolio" as any}
-            variant="bordered"
-            radius="full"
-            className="bg-[#18181A] border border-white/10 text-white font-body text-[15px] font-medium px-8 h-13 w-full sm:w-auto hover:bg-[#27272A] transition-colors"
-          >
-            Explore Archive
-          </Button>
+          <Link href={"/portfolio" as any} className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              className="w-full bg-[#18181A] border border-white/10 text-white font-body text-[15px] font-medium px-8 h-13 hover:bg-[#27272A] transition-colors"
+            >
+              Explore Archive
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
