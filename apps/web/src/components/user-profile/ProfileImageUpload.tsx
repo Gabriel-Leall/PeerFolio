@@ -9,7 +9,7 @@ import { toast } from "sonner";
 interface ProfileImageUploadProps {
   type: "avatar" | "banner";
   currentImageUrl?: string;
-  onUploadComplete: (url: string) => void;
+  onUploadComplete?: (url: string) => void;
   isOwner: boolean;
   className?: string;
   showIconOnly?: boolean;
