@@ -267,11 +267,11 @@ export default function FeedPage() {
     return (
       <div
         key={`feedback-${position}`}
-        className={`relative flex flex-col items-center justify-center p-8 rounded-2xl bg-[#0a0a0a] border border-white/5 min-h-[320px] lg:min-h-[380px] ${
+        className={`relative flex flex-col items-center justify-center p-8 rounded-2xl bg-[#0a0a0a] border border-white/5 min-h-80 lg:min-h-95 ${
           position % 3 === 1 ? "sm:mt-12" : position % 3 === 2 ? "lg:mt-6" : ""
         }`}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-50 rounded-2xl" />
+        <div className="absolute inset-0 bg-linear-to-b from-primary/5 to-transparent opacity-50 rounded-2xl" />
         <div className="relative z-10 text-center max-w-xs">
           <p className="font-serif text-2xl sm:text-3xl lg:text-4xl text-white/90 leading-tight mb-6 italic">
             Moldando o Etéreo
@@ -332,7 +332,7 @@ export default function FeedPage() {
       <div className="relative w-full py-10 md:py-16 border-b border-transparent">
         <div className="container mx-auto max-w-7xl px-4 text-center">
           {/* Background Glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30rem] h-[30rem] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-120 h-120 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
 
           {/* Title */}
           <h1 className="relative font-serif font-light tracking-tight text-foreground mx-auto max-w-6xl leading-snug mb-4">
@@ -343,7 +343,7 @@ export default function FeedPage() {
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <button className="inline-flex items-baseline justify-center text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary italic hover:opacity-80 transition-opacity decoration-primary/30 underline-offset-[6px] outline-none group focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm ml-1 sm:ml-2 mr-2 sm:mr-3" />
+                    <button className="inline-flex items-baseline justify-center text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary italic hover:opacity-80 transition-opacity decoration-primary/30 underline-offset-[6px] outline-none group focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm ml-1 sm:ml-2 mr-2 sm:mr-3" />
                   }
                 >
                   <span className="border-b-2 border-primary/30 group-hover:border-primary/60 transition-colors cursor-pointer pb-0.5 sm:pb-1 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
@@ -353,7 +353,7 @@ export default function FeedPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="center"
-                  className="w-56 bg-[#131313]/95 backdrop-blur-xl border-white/10 text-white rounded-xl p-2"
+                  className="w-56 bg-inverse-primary/95 backdrop-blur-xl border-white/10 text-white rounded-xl p-2"
                 >
                   {FILTERS.map((f) => (
                     <DropdownMenuItem
@@ -377,7 +377,7 @@ export default function FeedPage() {
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <button className="inline-flex items-baseline justify-center text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary italic hover:opacity-80 transition-opacity decoration-primary/30 underline-offset-[6px] outline-none group focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm" />
+                    <button className="inline-flex items-baseline justify-center text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary italic hover:opacity-80 transition-opacity decoration-primary/30 underline-offset-[6px] outline-none group focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm" />
                   }
                 >
                   <span className="border-b-2 border-primary/30 group-hover:border-primary/60 transition-colors cursor-pointer pb-0.5 sm:pb-1 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
@@ -387,7 +387,7 @@ export default function FeedPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="center"
-                  className="w-56 bg-[#131313]/95 backdrop-blur-xl border-white/10 text-white rounded-xl p-2 max-h-[60vh] overflow-y-auto"
+                  className="w-56 bg-inverse-primary/95 backdrop-blur-xl border-white/10 text-white rounded-xl p-2 max-h-[60vh] overflow-y-auto"
                 >
                   {CATEGORIES.map((cat) => (
                     <DropdownMenuItem

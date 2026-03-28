@@ -75,9 +75,7 @@ export default function Header() {
   const pathname = usePathname();
   const isLandingPage = pathname === "/";
 
-  const landingLinks = [
-    { to: "#portfolios", label: "Comunidade" },
-  ] as const;
+  const landingLinks = [{ to: "#portfolios", label: "Comunidade" }] as const;
 
   const appLinks: { to: string; label: string }[] = [];
 
@@ -109,7 +107,7 @@ export default function Header() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-80 border-white/10 bg-[#131313]/95 backdrop-blur-xl text-white"
+            className="w-80 border-white/10 bg-inverse-primary/95 backdrop-blur-xl text-white"
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="font-serif text-lg text-white/90">
@@ -181,7 +179,7 @@ export default function Header() {
           />
           <DropdownMenuContent
             align="end"
-            className="w-56 border-white/10 bg-[#131313]/95 backdrop-blur-xl text-white"
+            className="w-56 border-white/10 bg-inverse-primary/95 backdrop-blur-xl text-white"
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="font-normal">
@@ -198,7 +196,10 @@ export default function Header() {
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Link href={`/dashboard/${me?._id}`} className="flex items-center w-full">
+                <Link
+                  href={`/dashboard/${me?._id}`}
+                  className="flex items-center w-full"
+                >
                   <User className="mr-2 h-4 w-4" />
                   <span>Meu Perfil</span>
                 </Link>
@@ -260,7 +261,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#131313]/90 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-inverse-primary/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 w-full items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-8">
           <Link
