@@ -4,9 +4,11 @@ import { useUser } from "@clerk/nextjs";
 import { api } from "@PeerFolio/backend/convex/_generated/api";
 import type { Id } from "@PeerFolio/backend/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
+import Link from "next/link";
 import { useState } from "react";
 
 import AuthModal from "@/components/AuthModal";
+import { getProfileRoute } from "@/lib/profile-route";
 
 // ---------------------------------------------------------------------------
 // Relative time helper
@@ -73,6 +75,7 @@ export default function CritiqueCard({
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const displayName = author.nickname ?? "Anônimo";
+  const profileHref = getProfileRoute({ nickname: author.nickname, _id: author._id });
 
   const handleUpvote = async () => {
     if (!isSignedIn) {
@@ -104,8 +107,8 @@ export default function CritiqueCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5">
             {/* Avatar */}
-            <a
-              href={`/dashboard/${author._id}`}
+            <Link
+              href={profileHref as any}
               className="shrink-0"
               aria-label={`Ver perfil de ${displayName}`}
             >
@@ -124,16 +127,16 @@ export default function CritiqueCard({
                   {displayName.charAt(0).toUpperCase()}
                 </div>
               )}
-            </a>
+            </Link>
 
             {/* Nickname + area */}
             <div className="min-w-0">
-              <a
-                href={`/dashboard/${author._id}`}
+              <Link
+                href={profileHref as any}
                 className="text-sm font-medium hover:underline truncate block"
               >
                 @{displayName}
-              </a>
+              </Link>
               {author.primaryArea && (
                 <span className="inline-block rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
                   {author.primaryArea}

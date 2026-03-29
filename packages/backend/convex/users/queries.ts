@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import type { Doc } from "../_generated/dataModel";
 
 import { query } from "../_generated/server";
 
@@ -21,16 +22,23 @@ function resolveReputationBadge(upvotesReceived: number): string | null {
 export const getProfile = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
-    // Try direct _id lookup first (most common case from profile links)
-    let user;
-    try {
-      // ctx.db.get expects a typed Id, try it optimistically
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      user = await ctx.db.get(args.userId as any);
-      // If the result is not a users doc (wrong table), fall through
-      if (user && !("clerkId" in user)) user = null;
-    } catch {
-      user = null;
+    // Prefer nickname for pretty profile URLs: /profile/<nickname>
+    let user: Doc<"users"> | null = await ctx.db
+      .query("users")
+      .withIndex("by_nickname", (q) => q.eq("nickname", args.userId))
+      .first();
+
+    // Fallback: direct _id lookup
+    if (!user) {
+      try {
+        // ctx.db.get expects a typed Id, try it optimistically
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const maybeUser = await ctx.db.get(args.userId as any);
+        // If the result is not a users doc (wrong table), fall through
+        user = maybeUser && "clerkId" in maybeUser ? (maybeUser as Doc<"users">) : null;
+      } catch {
+        user = null;
+      }
     }
 
     // Fallback: look up by clerkId index

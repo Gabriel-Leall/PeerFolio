@@ -20,6 +20,7 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { ModeToggle } from "./mode-toggle";
+import { getProfileRoute } from "@/lib/profile-route";
 
 export default function Header() {
   const { isSignedIn, user } = useUser();
@@ -197,7 +198,7 @@ export default function Header() {
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <Link
-                  href={`/dashboard/${me?._id}`}
+                  href={getProfileRoute(me) as any}
                   className="flex items-center w-full"
                 >
                   <User className="mr-2 h-4 w-4" />

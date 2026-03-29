@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+import { getProfileRoute } from "@/lib/profile-route";
+
 export default function DashboardRoot() {
   const { isSignedIn, isLoaded } = useUser();
   const router = useRouter();
@@ -14,8 +16,8 @@ export default function DashboardRoot() {
 
   // If the user is signed in and we have their Convex ID, redirect to their profile
   useEffect(() => {
-    if (isLoaded && isSignedIn && me?._id) {
-      router.replace(`/dashboard/${me._id}`);
+    if (isLoaded && isSignedIn && me) {
+      router.replace(getProfileRoute(me) as any);
     }
   }, [isLoaded, isSignedIn, me, router]);
 

@@ -4,6 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import { api } from "@PeerFolio/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { useParams } from "next/navigation";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useState } from "react";
 import { Bell } from "lucide-react";
@@ -36,6 +37,14 @@ export default function ProfilePage() {
   const isLoading = profile === undefined;
   const isNotFound = profile === null;
   const isOwner = isSignedIn && meQuery?._id === profile?._id;
+
+  useEffect(() => {
+    if (!profile?.nickname) return;
+    const nicknamePath = `/profile/${profile.nickname}`;
+    if (typeof window !== "undefined" && window.location.pathname !== nicknamePath) {
+      window.history.replaceState(null, "", nicknamePath);
+    }
+  }, [profile?.nickname]);
 
   const handleAvailabilityToggle = async () => {
     if (!isOwner || isTogglingAvailability) return;

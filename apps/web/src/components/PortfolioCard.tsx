@@ -10,6 +10,7 @@ import { useState } from "react";
 
 import AuthModal from "@/components/AuthModal";
 import { TruncatedText } from "@/components/TruncatedText";
+import { getProfileRoute } from "@/lib/profile-route";
 
 // ---------------------------------------------------------------------------
 // Type derived from portfolios.list query return
@@ -149,7 +150,10 @@ export default function PortfolioCard({
             {/* Author */}
             <object>
               <Link
-                href={`/dashboard/${portfolio.authorId}`}
+                href={getProfileRoute({
+                  nickname: portfolio.author.nickname,
+                  _id: portfolio.authorId,
+                }) as any}
                 className="flex items-center gap-2 hover:opacity-80 transition"
               >
                 {portfolio.author.avatarUrl ? (
