@@ -13,12 +13,14 @@ import {
   Send,
   Star,
   ThumbsUp,
+  User,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import AuthModal from "@/components/AuthModal";
+import { getProfileRoute } from "@/lib/profile-route";
 import type { FeedCardData } from "./FeedCard";
 
 // ---------------------------------------------------------------------------
@@ -380,6 +382,10 @@ export function PortfolioPreviewModal({
   if (!portfolio) return null;
 
   const displayName = portfolio.author.nickname ?? "Anônimo";
+  const authorProfileHref = getProfileRoute({
+    nickname: portfolio.author.nickname,
+    _id: portfolio.authorId,
+  });
   const isLoading = critiques === undefined;
 
   return (
@@ -518,21 +524,22 @@ export function PortfolioPreviewModal({
 
               {/* ── CTAs ── */}
               <div className="mt-8 flex items-center gap-3">
-                <Link
-                  href={`/portfolio/${portfolio._id}` as any}
-                  className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-                >
-                  Ver Página Completa
-                </Link>
                 <a
                   href={portfolio.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-border/15 px-5 py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-border/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                 >
                   <ExternalLink className="h-4 w-4" />
                   Visitar Site
                 </a>
+                <Link
+                  href={authorProfileHref as any}
+                  className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-border/15 px-5 py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-border/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                >
+                  <User className="h-4 w-4" />
+                  Ver Perfil do Autor
+                </Link>
               </div>
 
               {/* ── Critiques Section ── */}
