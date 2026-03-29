@@ -50,7 +50,7 @@ export const getProfile = query({
     }
 
     if (!user) {
-      throw new ConvexError("USER_NOT_FOUND");
+      return null;
     }
 
     // Fetch authored portfolios (not deleted)

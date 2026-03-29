@@ -5,9 +5,7 @@ import { api } from "@PeerFolio/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
-import Link from "next/link";
 import { useState } from "react";
-import { Bell } from "lucide-react";
 
 import {
   UserProfileBanner,
@@ -20,6 +18,7 @@ import {
   UserProfileContentRailSkeleton,
 } from "@/components/user-profile";
 import type { UserProfileTab } from "@/components/user-profile/types";
+import { ProfileNotFoundState } from "@/components/profile/ProfileNotFoundState";
 
 export default function ProfilePage() {
   const params = useParams<{ userId: string }>();
@@ -37,6 +36,13 @@ export default function ProfilePage() {
   const isLoading = profile === undefined;
   const isNotFound = profile === null;
   const isOwner = isSignedIn && meQuery?._id === profile?._id;
+
+  useEffect(() => {
+    if (!isNotFound) return;
+    if (typeof window !== "undefined" && window.location.pathname !== "/error") {
+      window.history.replaceState(null, "", "/error");
+    }
+  }, [isNotFound]);
 
   useEffect(() => {
     if (!profile?.nickname) return;
@@ -77,23 +83,7 @@ export default function ProfilePage() {
   }
 
   if (isNotFound) {
-    return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center px-4">
-        <div className="mb-4 rounded-full bg-muted p-4">
-          <Bell className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h1 className="text-2xl font-bold mb-2">Usuário não encontrado</h1>
-        <p className="text-muted-foreground mb-6">
-          Este perfil não existe ou foi removido.
-        </p>
-        <Link
-          href="/"
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition"
-        >
-          Voltar ao feed
-        </Link>
-      </div>
-    );
+    return <ProfileNotFoundState />;
   }
 
   const displayName = profile.nickname ?? "Anônimo";
