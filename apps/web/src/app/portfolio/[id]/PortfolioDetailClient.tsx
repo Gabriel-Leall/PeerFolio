@@ -3,6 +3,7 @@
 import { api } from "@peerFolio/backend/convex/_generated/api";
 import type { Id } from "@peerFolio/backend/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import {
   Camera,
   ExternalLink,
@@ -18,6 +19,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 
 import CritiqueCard from "@/components/CritiqueCard";
+import { getProfileRoute } from "@/lib/profile-route";
 import CritiqueForm from "./CritiqueForm";
 
 // ---------------------------------------------------------------------------
@@ -75,10 +77,11 @@ function AuthorCard({
   };
 }) {
   const displayName = author.nickname ?? "Anônimo";
+  const profileHref = getProfileRoute({ nickname: author.nickname, _id: author._id });
 
   return (
     <Link
-      href={`/dashboard/${author._id}`}
+      href={profileHref as any}
       className="group inline-flex items-center gap-3 rounded-lg border bg-card px-3 py-2 transition-all hover:border-[#a762b5]/30 hover:shadow-md hover:shadow-[#a762b5]/5"
     >
       {author.avatarUrl ? (
@@ -156,6 +159,69 @@ function VisitSiteButton({ url }: { url: string }) {
       <ExternalLink className="h-4 w-4" />
       Visitar Site
     </a>
+  );
+}
+
+function formatRetryTime(ms: number): string {
+  const totalMinutes = Math.ceil(ms / 60_000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0 && minutes > 0) {
+    return `${hours}h ${minutes}min`;
+  }
+  if (hours > 0) {
+    return `${hours}h`;
+  }
+  return `${Math.max(1, minutes)}min`;
+}
+
+function RefreshPreviewButton({
+  portfolioId,
+  isOwner,
+}: {
+  portfolioId: Id<"portfolios">;
+  isOwner: boolean;
+}) {
+  const refreshPreview = useMutation(api.portfolios.mutations.refreshPreview);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  if (!isOwner) return null;
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    setMessage(null);
+    try {
+      const result = await refreshPreview({ portfolioId });
+      if (result.status === "cooldown") {
+        const retryAfter = result.retryAfterMs ?? 0;
+        setMessage(
+          `Você poderá atualizar novamente em ${formatRetryTime(retryAfter)}.`,
+        );
+      } else {
+        setMessage("Preview em atualização. Recarregue em instantes.");
+      }
+    } catch {
+      setMessage("Não foi possível atualizar o preview agora.");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <button
+        type="button"
+        onClick={handleRefresh}
+        disabled={isRefreshing}
+        className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium transition-all hover:bg-muted hover:border-[#a762b5]/30 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isRefreshing ? "Atualizando..." : "Atualizar preview"}
+      </button>
+      {message && <p className="text-xs text-muted-foreground">{message}</p>}
+    </div>
   );
 }
 
@@ -563,6 +629,7 @@ export default function PortfolioDetailClient({ portfolioId }: PortfolioDetailCl
           {/* Action buttons */}
           <div className="flex flex-wrap items-center gap-3">
             <ShareButton />
+            <RefreshPreviewButton portfolioId={portfolioId} isOwner={isOwner} />
             <VisitSiteButton url={portfolio.url} />
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { internalMutation } from "../_generated/server";
+import { internal } from "../_generated/api";
 import { v } from "convex/values";
 import { AREA_VALUES } from "../lib/constants";
 import { normalizeUrl } from "../lib/urlUtils";
@@ -22,10 +23,33 @@ export const createSeed = internalMutation({
   returns: v.id("portfolios"),
   handler: async (ctx, args) => {
     const normalizedUrl = normalizeUrl(args.url);
-    const hasScreenshotProvider = Boolean(process.env.SCREENSHOT_ONE_KEY);
+    const now = Date.now();
+
+    let systemUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", "seed-system"))
+      .unique();
+
+    if (!systemUser) {
+      const systemUserId = await ctx.db.insert("users", {
+        clerkId: "seed-system",
+        nickname: "Seed System",
+        availabilityStatus: "unavailable",
+        portfoliosCount: 0,
+        critiquesGivenCount: 0,
+        upvotesReceivedCount: 0,
+        createdAt: Date.now(),
+      });
+
+      systemUser = await ctx.db.get(systemUserId);
+      if (!systemUser) {
+        throw new Error("FAILED_TO_CREATE_SEED_SYSTEM_USER");
+      }
+    }
 
     const portfolioId = await ctx.db.insert("portfolios", {
-      authorId: "system" as any,
+      createdAt: now,
+      authorId: systemUser._id,
       url: args.url,
       normalizedUrl,
       title: args.title,
@@ -39,13 +63,66 @@ export const createSeed = internalMutation({
       lastCritiqueAt: undefined,
       isDeleted: false,
       isArchived: false,
-      previewStatus: hasScreenshotProvider ? "pending" : "failed",
+      previewStatus: "pending",
       previewAttemptCount: 0,
+      previewRefreshRequestedAt: now,
       urlStatus: "unchecked",
       consecutiveOfflineCount: 0,
-      createdAt: Date.now(),
     });
 
     return portfolioId;
+  },
+});
+
+export const replaceSeedUrl = internalMutation({
+  args: {
+    portfolioId: v.id("portfolios"),
+    url: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const normalizedUrl = normalizeUrl(args.url);
+    const now = Date.now();
+
+    await ctx.db.patch(args.portfolioId, {
+      url: args.url,
+      normalizedUrl,
+      previewStatus: "pending",
+      previewAttemptCount: 0,
+      previewRefreshRequestedAt: now,
+    });
+
+    await ctx.scheduler.runAfter(
+      0,
+      internal.portfolios.scheduled.generatePreview,
+      {
+        portfolioId: args.portfolioId,
+        normalizedUrl,
+        attemptCount: 0,
+      },
+    );
+
+    return null;
+  },
+});
+
+export const deleteSeed = internalMutation({
+  args: {
+    portfolioId: v.id("portfolios"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const portfolio = await ctx.db.get(args.portfolioId);
+
+    if (!portfolio) {
+      return null;
+    }
+
+    await ctx.db.patch(args.portfolioId, {
+      isDeleted: true,
+      deletedAt: Date.now(),
+    });
+
+    return null;
   },
 });

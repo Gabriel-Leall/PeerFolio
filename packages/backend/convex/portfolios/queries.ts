@@ -20,6 +20,11 @@ export const getById = query({
       stack: v.array(v.string()),
       goalsContext: v.optional(v.string()),
       previewImageUrl: v.optional(v.string()),
+      previewStatus: v.optional(
+        v.union(v.literal("pending"), v.literal("success"), v.literal("failed")),
+      ),
+      previewAttemptCount: v.optional(v.number()),
+      previewRefreshRequestedAt: v.optional(v.number()),
       averageRating: v.number(),
       critiqueCount: v.number(),
       likeCount: v.number(),

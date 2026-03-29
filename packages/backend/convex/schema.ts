@@ -39,7 +39,9 @@ export default defineSchema({
     reputationScore: v.optional(v.number()),
     totalUpvotesReceived: v.optional(v.number()),
     createdAt: v.number(),
-  }).index("by_clerkId", ["clerkId"]),
+  })
+    .index("by_clerkId", ["clerkId"])
+    .index("by_nickname", ["nickname"]),
 
   portfolios: defineTable({
     authorId: v.id("users"),
@@ -61,6 +63,7 @@ export default defineSchema({
       v.union(v.literal("pending"), v.literal("success"), v.literal("failed")),
     ),
     previewAttemptCount: v.optional(v.number()),
+    previewRefreshRequestedAt: v.optional(v.number()),
 
     // URL Health
     urlStatus: v.optional(

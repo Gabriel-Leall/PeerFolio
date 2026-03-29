@@ -15,6 +15,8 @@ const areaValidator = v.union(
   v.literal(AREA_VALUES[5]),
 );
 
+const PREVIEW_REFRESH_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
 export const submit = mutation({
   args: {
     url: v.string(),
@@ -29,7 +31,6 @@ export const submit = mutation({
   }),
   handler: async (ctx, args) => {
     const user = await getInternalUser(ctx);
-    const hasScreenshotProvider = Boolean(process.env.SCREENSHOT_ONE_KEY);
 
     // Field limit validation
     if (args.title.length > 80) {
@@ -111,8 +112,9 @@ export const submit = mutation({
       isDeleted: false,
       isArchived: false,
       isSeeded: false,
-      previewStatus: hasScreenshotProvider ? "pending" : "failed",
+      previewStatus: "pending",
       previewAttemptCount: 0,
+      previewRefreshRequestedAt: now,
       urlStatus: "unchecked",
       consecutiveOfflineCount: 0,
       createdAt: now,
@@ -123,14 +125,12 @@ export const submit = mutation({
       portfoliosCount: user.portfoliosCount + 1,
     });
 
-    // T036: Kick off preview generation only when provider is configured.
-    if (hasScreenshotProvider) {
-      await ctx.scheduler.runAfter(
-        0,
-        internal.portfolios.scheduled.generatePreview,
-        { portfolioId, normalizedUrl, attemptCount: 0 },
-      );
-    }
+    // T036: Kick off preview generation.
+    await ctx.scheduler.runAfter(
+      0,
+      internal.portfolios.scheduled.generatePreview,
+      { portfolioId, normalizedUrl, attemptCount: 0 },
+    );
 
     return { portfolioId, claimed: false };
   },
@@ -166,5 +166,56 @@ export const deletePortfolio = mutation({
     await ctx.db.patch(user._id, {
       portfoliosCount: Math.max(0, user.portfoliosCount - 1),
     });
+  },
+});
+
+export const refreshPreview = mutation({
+  args: {
+    portfolioId: v.id("portfolios"),
+  },
+  returns: v.object({
+    status: v.union(v.literal("scheduled"), v.literal("cooldown")),
+    retryAfterMs: v.optional(v.number()),
+  }),
+  handler: async (ctx, args) => {
+    const user = await getInternalUser(ctx);
+    const portfolio = await ctx.db.get(args.portfolioId);
+
+    if (!portfolio || portfolio.isDeleted) {
+      throw new ConvexError("NOT_FOUND");
+    }
+
+    if (portfolio.authorId !== user._id) {
+      throw new ConvexError("UNAUTHORIZED");
+    }
+
+    const now = Date.now();
+    const lastRefreshAt = portfolio.previewRefreshRequestedAt;
+    const elapsed = lastRefreshAt === undefined ? PREVIEW_REFRESH_COOLDOWN_MS : now - lastRefreshAt;
+
+    if (lastRefreshAt !== undefined && elapsed < PREVIEW_REFRESH_COOLDOWN_MS) {
+      return {
+        status: "cooldown" as const,
+        retryAfterMs: PREVIEW_REFRESH_COOLDOWN_MS - elapsed,
+      };
+    }
+
+    await ctx.db.patch(args.portfolioId, {
+      previewStatus: "pending",
+      previewAttemptCount: 0,
+      previewRefreshRequestedAt: now,
+    });
+
+    await ctx.scheduler.runAfter(
+      0,
+      internal.portfolios.scheduled.generatePreview,
+      {
+        portfolioId: portfolio._id,
+        normalizedUrl: portfolio.normalizedUrl,
+        attemptCount: 0,
+      },
+    );
+
+    return { status: "scheduled" as const };
   },
 });

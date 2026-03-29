@@ -52,7 +52,7 @@ export const updatePreviewResult = internalMutation({
 
 // ---------------------------------------------------------------------------
 // T036 — generatePreview: fires after portfolio insert
-// Calls ScreenshotOne API; retries up to 3x with exponential back-off
+// Calls Microlink API; retries up to 3x with exponential back-off
 // ---------------------------------------------------------------------------
 
 export const generatePreview = internalAction({
@@ -64,41 +64,32 @@ export const generatePreview = internalAction({
   handler: async (ctx, { portfolioId, normalizedUrl, attemptCount }) => {
     const newAttemptCount = attemptCount + 1;
 
-    const screenshotApiKey = process.env.SCREENSHOT_ONE_KEY;
-
-    // If no API key configured, mark as failed immediately
-    if (!screenshotApiKey) {
-      await ctx.runMutation(internal.portfolios.scheduled.updatePreviewResult, {
-        portfolioId,
-        status: "failed",
-        attemptCount: newAttemptCount,
-      });
-      return;
-    }
-
-    const screenshotUrl =
-      `https://api.screenshotone.com/take` +
-      `?access_key=${screenshotApiKey}` +
-      `&url=${encodeURIComponent(normalizedUrl)}` +
-      `&viewport_width=1280&viewport_height=800` +
-      `&format=webp&image_quality=80` +
-      `&full_page=false&delay=2` +
-      `&response_type=json`;
+    const microlinkUrl =
+      `https://api.microlink.io/` +
+      `?url=${encodeURIComponent(normalizedUrl)}` +
+      `&screenshot=true` +
+      `&meta=false`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
     try {
-      const response = await fetch(screenshotUrl, {
+      const response = await fetch(microlinkUrl, {
         signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(`Screenshot API returned ${response.status}`);
+        throw new Error(`Microlink API returned ${response.status}`);
       }
 
-      const data = (await response.json()) as { url?: string };
-      const previewImageUrl = data.url;
+      const data = (await response.json()) as {
+        data?: {
+          screenshot?: {
+            url?: string;
+          };
+        };
+      };
+      const previewImageUrl = data.data?.screenshot?.url;
 
       if (!previewImageUrl) {
         throw new Error("No URL in screenshot response");
